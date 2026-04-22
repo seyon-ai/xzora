@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA Admin — Dashboard</title>
+<link rel="stylesheet" href="admin.css"/>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar">
+  <div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Admin Panel</div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar" style="background:var(--accent)">A</div><div><p class="sb-uname" id="sbName">Admin</p><p class="sb-uemail" id="sbEmail"></p></div></div>
+  <nav class="sb-nav">
+    <a href="admin-dashboard.html" class="sb-item on"><span class="sb-icon">🏠</span>Dashboard</a>
+    <a href="admin-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>All Orders</a>
+    <a href="admin-sellers.html" class="sb-item"><span class="sb-icon">🏪</span>Sellers</a>
+    <a href="admin-users.html" class="sb-item"><span class="sb-icon">👥</span>Users</a>
+    <a href="admin-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a>
+    <a href="admin-commission.html" class="sb-item"><span class="sb-icon">💰</span>Commission</a>
+    <a href="admin-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Control</a>
+  </nav>
+  <div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div>
+</aside>
+<div class="main-wrap">
+  <div class="top-bar"><span class="page-title">ADMIN DASHBOARD</span><div class="top-actions"><span style="font-size:11px;color:var(--muted)">Last updated: <span id="lastUpdate">—</span></span></div></div>
+  <div class="content">
+    <div class="stats-row" style="grid-template-columns:repeat(6,1fr)">
+      <div class="stat-card"><div class="sc-label">Total Revenue</div><div class="sc-value" id="aRev" style="font-size:22px">₹0</div></div>
+      <div class="stat-card"><div class="sc-label">Commission</div><div class="sc-value" id="aComm" style="font-size:22px">₹0</div></div>
+      <div class="stat-card"><div class="sc-label">Total Orders</div><div class="sc-value" id="aOrd">0</div></div>
+      <div class="stat-card"><div class="sc-label">Active Sellers</div><div class="sc-value" id="aSell">0</div></div>
+      <div class="stat-card"><div class="sc-label">Users</div><div class="sc-value" id="aUsers">0</div></div>
+      <div class="stat-card"><div class="sc-label">Products</div><div class="sc-value" id="aProd">0</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Recent Orders <span onclick="window.location='admin-orders.html'">View All →</span></div>
+        <table><thead><tr><th>Order ID</th><th>User</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
+        <tbody id="recentOrders"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px">Loading...</td></tr></tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-title">Pending Approvals <span onclick="window.location='admin-products.html'">View All →</span></div>
+        <table><thead><tr><th>Product</th><th>Seller</th><th>Price</th><th>Action</th></tr></thead>
+        <tbody id="pendingProducts"><tr><td colspan="4" style="color:var(--muted);text-align:center;padding:20px">Loading...</td></tr></tbody></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Latest Sellers <span onclick="window.location='admin-sellers.html'">View All →</span></div>
+      <table><thead><tr><th>Seller</th><th>Email</th><th>Joined</th><th>Revenue</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="latestSellers"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">Loading...</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireAdmin, logout } from './auth.js';
+import { getPlatformStats, getAllOrders, getAllSellers, getAllProducts, updateProductStatus } from './admin.js';
+initCursor();
+
+requireAdmin().then(async user=>{
+  document.getElementById('sbAvatar').textContent=(user.displayName||'A').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Admin';
+  document.getElementById('sbEmail').textContent=user.email||'';
+  document.getElementById('lastUpdate').textContent=new Date().toLocaleTimeString('en-IN');
+  loadAll();
+});
+document.getElementById('logoutBtn').onclick=()=>logout();
+
+async function loadAll(){
+  try{
+    const [stats,orders,sellers,products]=await Promise.all([getPlatformStats(),getAllOrders(5),getAllSellers(5),getAllProducts(10)]);
+    document.getElementById('aRev').textContent=`₹${stats.revenue.toLocaleString('en-IN')}`;
+    document.getElementById('aComm').textContent=`₹${stats.commission.toLocaleString('en-IN')}`;
+    document.getElementById('aOrd').textContent=stats.orders;
+    document.getElementById('aSell').textContent=stats.sellers;
+    document.getElementById('aUsers').textContent=stats.users;
+    document.getElementById('aProd').textContent=stats.products;
+    document.getElementById('recentOrders').innerHTML=orders.slice(0,5).map(o=>`<tr><td style="color:var(--accent)">${o.orderId}</td><td>${o.userName||'—'}</td><td>₹${o.total?.toLocaleString('en-IN')}</td><td>${o.payment?.method||'COD'}</td><td><span class="status-pill sp-${o.status||'confirmed'}">${o.status||'confirmed'}</span></td></tr>`).join('')||'<tr><td colspan="5" style="color:var(--muted);text-align:center">No orders</td></tr>';
+    const pending=products.filter(p=>p.status==='pending');
+    document.getElementById('pendingProducts').innerHTML=pending.slice(0,5).map(p=>`<tr><td>${p.name}</td><td>${p.sellerName||p.sellerId?.slice(0,8)||'—'}</td><td>₹${Number(p.price).toLocaleString('en-IN')}</td><td><div style="display:flex;gap:6px"><button class="tb-btn tb-primary" style="padding:4px 10px;font-size:10px" onclick="approveProduct('${p.id}')">Approve</button><button class="tb-btn" style="padding:4px 10px;font-size:10px;background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.2)" onclick="rejectProduct('${p.id}')">Reject</button></div></td></tr>`).join('')||'<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:16px">No pending products</td></tr>';
+    document.getElementById('latestSellers').innerHTML=sellers.slice(0,5).map(s=>`<tr><td>${s.displayName||'Seller'}</td><td>${s.email||'—'}</td><td>${s.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'—'}</td><td>₹${(s.revenue||0).toLocaleString('en-IN')}</td><td><span class="status-pill sp-${s.status||'active'}">${s.status||'active'}</span></td><td><a href="admin-sellers.html" style="color:var(--accent);font-size:11px">View</a></td></tr>`).join('')||'<tr><td colspan="6" style="color:var(--muted);text-align:center">No sellers</td></tr>';
+  }catch(e){console.log(e);}
+}
+window.approveProduct=async(id)=>{try{await updateProductStatus(id,'active');toast('Product approved','success');loadAll();}catch(e){toast(e.message,'error');}};
+window.rejectProduct=async(id)=>{try{await updateProductStatus(id,'rejected');toast('Product rejected','error');loadAll();}catch(e){toast(e.message,'error');}};
+</script>
+</body>
+</html>

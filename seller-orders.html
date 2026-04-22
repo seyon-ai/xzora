@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA Seller — Orders</title>
+<link rel="stylesheet" href="seller.css"/>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar">
+  <div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Seller Portal</div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">S</div><div><p class="sb-uname" id="sbName">Seller</p><p class="sb-uemail" id="sbEmail"></p></div></div>
+  <nav class="sb-nav">
+    <a href="seller-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a>
+    <a href="seller-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a>
+    <a href="seller-orders.html" class="sb-item on"><span class="sb-icon">🛍️</span>Orders</a>
+    <a href="seller-analytics.html" class="sb-item"><span class="sb-icon">📊</span>Analytics</a>
+    <a href="seller-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Tools</a>
+    <a href="seller-help.html" class="sb-item"><span class="sb-icon">❓</span>Help</a>
+  </nav>
+  <div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div>
+</aside>
+<div class="main-wrap">
+  <div class="top-bar"><span class="page-title">ORDERS</span>
+    <div class="top-actions">
+      <select class="form-select" id="statusFilter" onchange="filterOrders()" style="padding:7px 12px;font-size:12px;width:auto">
+        <option value="">All Status</option><option value="confirmed">Confirmed</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+  </div>
+  <div class="content">
+    <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card"><div class="sc-label">Total Orders</div><div class="sc-value" id="sTotal">0</div></div>
+      <div class="stat-card"><div class="sc-label">Pending</div><div class="sc-value" id="sPending">0</div></div>
+      <div class="stat-card"><div class="sc-label">Shipped</div><div class="sc-value" id="sShipped">0</div></div>
+      <div class="stat-card"><div class="sc-label">Delivered</div><div class="sc-value" id="sDelivered">0</div></div>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="ordersTbl"><tr><td colspan="8" style="color:var(--muted);text-align:center;padding:32px">Loading orders...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireSeller, logout } from './auth.js';
+import { getSellerOrders, updateOrderStatus } from './seller.js';
+initCursor();
+let allOrders=[], sellerId=null;
+
+requireSeller().then(async user=>{
+  sellerId=user.uid;
+  document.getElementById('sbAvatar').textContent=(user.displayName||'S').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Seller';
+  document.getElementById('sbEmail').textContent=user.email||'';
+  loadOrders();
+});
+document.getElementById('logoutBtn').onclick=()=>logout();
+
+async function loadOrders(){
+  try{
+    allOrders=await getSellerOrders(sellerId);
+    updateStats(allOrders); renderOrders(allOrders);
+  }catch(e){document.getElementById('ordersTbl').innerHTML=`<tr><td colspan="8" style="color:var(--red);text-align:center;padding:20px">${e.message}</td></tr>`;}
+}
+
+function updateStats(orders){
+  document.getElementById('sTotal').textContent=orders.length;
+  document.getElementById('sPending').textContent=orders.filter(o=>o.status==='confirmed'||o.status==='processing').length;
+  document.getElementById('sShipped').textContent=orders.filter(o=>o.status==='shipped').length;
+  document.getElementById('sDelivered').textContent=orders.filter(o=>o.status==='delivered').length;
+}
+
+function renderOrders(orders){
+  const tbl=document.getElementById('ordersTbl');
+  if(!orders.length){tbl.innerHTML='<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:32px">No orders found</td></tr>';return;}
+  tbl.innerHTML=orders.map(o=>`<tr>
+    <td style="color:var(--accent);font-weight:500">${o.orderId}</td>
+    <td>${o.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short'})||'—'}</td>
+    <td>${o.userName||'Customer'}</td>
+    <td>${o.items?.length||0} items</td>
+    <td>₹${o.total?.toLocaleString('en-IN')}</td>
+    <td>${o.payment?.method||'COD'}</td>
+    <td><span class="status-pill sp-${o.status||'pending'}">${o.status||'pending'}</span></td>
+    <td>
+      <select class="form-select" style="padding:4px 8px;font-size:11px;width:auto" onchange="updateStatus('${o.orderId}',this.value)">
+        <option value="confirmed" ${o.status==='confirmed'?'selected':''}>Confirmed</option>
+        <option value="processing" ${o.status==='processing'?'selected':''}>Processing</option>
+        <option value="shipped" ${o.status==='shipped'?'selected':''}>Shipped</option>
+        <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
+        <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
+      </select>
+    </td>
+  </tr>`).join('');
+}
+
+window.filterOrders=function(){
+  const f=document.getElementById('statusFilter').value;
+  renderOrders(f?allOrders.filter(o=>o.status===f):allOrders);
+};
+
+window.updateStatus=async function(orderId,status){
+  try{await updateOrderStatus(orderId,status);toast('Order status updated','success');loadOrders();}catch(e){toast(e.message,'error');}
+};
+</script>
+</body>
+</html>

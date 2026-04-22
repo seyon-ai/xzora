@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — Sign In</title>
+<link rel="stylesheet" href="main.css"/>
+<style>
+body{overflow-y:auto}
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+.left{position:relative;overflow:hidden;background:var(--surface);display:flex;flex-direction:column;justify-content:space-between;padding:40px;border-right:1px solid var(--border)}
+.left-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 80%,rgba(232,213,163,.07) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 80% 20%,rgba(201,169,110,.05) 0%,transparent 70%)}
+.left-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:40px 40px}
+.lz{position:relative;z-index:1}
+.big-logo{font-family:var(--font-display);font-size:30px;letter-spacing:5px;color:var(--white);text-decoration:none}
+.big-logo span{color:var(--accent)}
+.left-title{font-family:var(--font-display);font-size:clamp(48px,5.5vw,76px);letter-spacing:2px;color:var(--white);line-height:.95;margin:14px 0 16px}
+.left-title .dim{color:rgba(255,255,255,.18)}
+.left-sub{font-size:13px;color:var(--muted);line-height:1.7;max-width:300px;margin-bottom:28px}
+.trust-item{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.t-icon{width:30px;height:30px;border-radius:7px;background:rgba(232,213,163,.08);border:1px solid rgba(232,213,163,.14);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.t-text strong{color:var(--text);font-weight:400;font-size:12px;display:block}
+.t-text span{font-size:11px;color:var(--muted)}
+.left-stats{display:flex;gap:26px}
+.ls-n{font-family:var(--font-display);font-size:26px;color:var(--white);letter-spacing:1px;display:block}
+.ls-l{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.fc{position:absolute;background:var(--surface2);border:1px solid var(--border2);border-radius:11px;padding:10px 14px;z-index:2}
+.fc1{top:28%;right:-10px;animation:floatY 4s ease-in-out infinite}
+.fc2{bottom:28%;right:36px;animation:floatY 4s ease-in-out infinite 2s}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.fc-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.fc-val{font-size:15px;font-weight:500;color:var(--accent);font-family:var(--font-display);letter-spacing:1px}
+.fc-sub{font-size:10px;color:var(--green);margin-top:2px}
+.right{display:flex;align-items:center;justify-content:center;padding:40px}
+.auth-box{width:100%;max-width:420px}
+.tab-row{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:26px}
+.tab-btn{flex:1;padding:10px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:var(--font-body);font-size:13px;cursor:none;transition:all .2s}
+.tab-btn.on{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
+.auth-title{font-family:var(--font-display);font-size:34px;letter-spacing:2px;color:var(--white);margin-bottom:5px}
+.auth-sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+.auth-sub a{color:var(--accent);text-decoration:none;cursor:none}
+.soc-row{display:flex;gap:8px;margin-bottom:16px}
+.soc-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:9px;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--font-body);font-size:12px;cursor:none;transition:all .2s}
+.soc-btn:hover{background:var(--surface2);transform:translateY(-1px)}
+.soc-btn svg{width:15px;height:15px;flex-shrink:0}
+.divider{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.div-line{flex:1;height:1px;background:var(--border)}
+.div-text{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.panel{display:none}.panel.on{display:block}
+.method-row{display:flex;gap:7px;margin-bottom:16px}
+.method-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:var(--font-body);font-size:11px;cursor:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.method-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(232,213,163,.06)}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:none;font-size:14px}
+.eye-btn:hover{color:var(--text)}
+.phone-row{display:flex;gap:8px}
+.dial-sel{width:88px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 8px;color:var(--text);font-family:var(--font-body);font-size:12px;outline:none;cursor:none;flex-shrink:0}
+.dial-sel:focus{border-color:var(--accent)}
+.forgot-row{display:flex;justify-content:flex-end;margin-bottom:14px;margin-top:-8px}
+.forgot-link{font-size:12px;color:var(--accent);text-decoration:none}
+.otp-sec{display:none;margin-bottom:16px}
+.otp-sec.on{display:block}
+.otp-sent{font-size:12px;color:var(--muted);margin-bottom:12px}
+.otp-sent strong{color:var(--text)}
+.otp-row{display:flex;gap:8px;margin-bottom:12px}
+.otp-inp{flex:1;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:13px 0;color:var(--white);font-family:var(--font-display);font-size:22px;letter-spacing:2px;outline:none;transition:border-color .2s;width:0}
+.otp-inp:focus{border-color:var(--accent);background:var(--surface2)}
+.resend-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:14px}
+.resend-btn{color:var(--accent);background:none;border:none;font-family:var(--font-body);font-size:12px;cursor:none}
+.resend-btn:disabled{color:var(--muted);pointer-events:none}
+.str-bar{height:3px;border-radius:2px;background:var(--surface2);margin-top:7px}
+.str-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0}
+.str-lbl{font-size:10px;color:var(--muted);margin-top:4px}
+.terms-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:16px}
+.chk{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;cursor:none;transition:all .2s;font-size:10px}
+.chk.on{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.terms-txt{font-size:12px;color:var(--muted);line-height:1.5}
+.terms-txt a{color:var(--accent);text-decoration:none}
+.submit-btn{width:100%;padding:13px;background:var(--accent);color:var(--bg);border:none;border-radius:10px;font-family:var(--font-body);font-size:13px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;cursor:none;transition:all .2s;margin-bottom:12px;position:relative;overflow:hidden}
+.submit-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.7;transform:none;pointer-events:none}
+.spin-wrap{display:none;position:absolute;inset:0;background:var(--accent2);align-items:center;justify-content:center}
+.spin-wrap.on{display:flex}
+.spinner{width:18px;height:18px;border:2px solid rgba(17,17,18,.3);border-top-color:var(--bg);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#recaptcha-container{position:fixed;bottom:0;right:0;z-index:1000}
+.not-configured{background:rgba(232,213,163,.06);border:1px solid rgba(232,213,163,.2);border-radius:10px;padding:14px;margin-bottom:18px;font-size:12px;color:var(--accent);line-height:1.6;display:none}
+.not-configured a{color:var(--accent);font-weight:500}
+@media(max-width:900px){.page{grid-template-columns:1fr}.left{display:none}.right{padding:30px 20px 50px;align-items:flex-start;padding-top:60px}}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div>
+<div id="xz-ring"></div>
+<div id="recaptcha-container"></div>
+
+<div class="page">
+  <!-- LEFT -->
+  <div class="left">
+    <div class="left-bg"></div><div class="left-grid"></div>
+    <div class="lz"><a href="index.html" class="big-logo">XZ<span>O</span>RA</a></div>
+    <div class="lz" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 0">
+      <p style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:12px">✦ Join 10 million+ shoppers</p>
+      <h2 class="left-title">SHOP<br><span class="dim">WITHOUT</span><br>LIMITS</h2>
+      <p class="left-sub">Create your account and unlock personalized deals, lightning-fast checkout, and AI-powered recommendations.</p>
+      <div>
+        <div class="trust-item"><div class="t-icon">🔒</div><div class="t-text"><strong>Bank-level Security</strong><span>End-to-end encrypted</span></div></div>
+        <div class="trust-item"><div class="t-icon">⚡</div><div class="t-text"><strong>Instant Checkout</strong><span>Save addresses & payments</span></div></div>
+        <div class="trust-item"><div class="t-icon">🤖</div><div class="t-text"><strong>AI Recommendations</strong><span>Products picked for you</span></div></div>
+      </div>
+    </div>
+    <div class="fc fc1"><div class="fc-lbl">Today's Savings</div><div class="fc-val">₹3,240</div><div class="fc-sub">↑ Flash sale live</div></div>
+    <div class="fc fc2"><div class="fc-lbl">Active Deals</div><div class="fc-val">2,841</div><div class="fc-sub">↑ More today</div></div>
+    <div class="lz"><div class="left-stats"><div><span class="ls-n">10M+</span><span class="ls-l">Users</span></div><div><span class="ls-n">50K+</span><span class="ls-l">Sellers</span></div><div><span class="ls-n">2M+</span><span class="ls-l">Products</span></div></div></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="auth-box">
+      <div id="notConfiguredBanner" class="not-configured">
+        ⚠️ Firebase is not configured yet. <a href="admin-config.html">Set up your API keys first →</a>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-row">
+        <button class="tab-btn on" id="tabLogin" onclick="setTab('login')">Sign In</button>
+        <button class="tab-btn" id="tabSignup" onclick="setTab('signup')">Create Account</button>
+      </div>
+
+      <!-- LOGIN PANEL -->
+      <div class="panel on" id="loginPanel">
+        <h2 class="auth-title">WELCOME BACK</h2>
+        <p class="auth-sub">New to Xzora? <a href="#" onclick="setTab('signup')">Create a free account →</a></p>
+        <div class="soc-row">
+          <button class="soc-btn" id="googleLoginBtn">
+            <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Google
+          </button>
+          <button class="soc-btn" id="appleLoginBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Apple
+          </button>
+        </div>
+        <div class="divider"><div class="div-line"></div><span class="div-text">or</span><div class="div-line"></div></div>
+        <div class="method-row">
+          <button class="method-btn on" id="emailMethodBtn" onclick="setMethod('email')">✉ Email</button>
+          <button class="method-btn" id="phoneMethodBtn" onclick="setMethod('phone')">📱 Phone OTP</button>
+        </div>
+        <!-- Email -->
+        <div id="emailForm">
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="loginEmail" placeholder="you@example.com"/><div class="form-error" id="emailErr">Enter a valid email</div></div>
+          <div class="form-group"><label class="form-label">Password</label><div style="position:relative"><input class="form-input" type="password" id="loginPass" placeholder="Your password"/><button class="eye-btn" onclick="toggleEye('loginPass',this)" type="button">👁</button></div></div>
+          <div class="forgot-row"><a href="#" class="forgot-link" id="forgotLink">Forgot password?</a></div>
+        </div>
+        <!-- Phone -->
+        <div id="phoneForm" style="display:none">
+          <div class="form-group"><label class="form-label">Phone Number</label><div class="phone-row"><select class="dial-sel" id="dialCode"><option value="+91">🇮🇳 +91</option><option value="+1">🇺🇸 +1</option><option value="+44">🇬🇧 +44</option><option value="+971">🇦🇪 +971</option></select><input class="form-input" type="tel" id="loginPhone" placeholder="9876543210"/></div></div>
+          <div class="otp-sec" id="loginOtpSec">
+            <p class="otp-sent">OTP sent to <strong id="otpSentTo"></strong></p>
+            <div class="otp-row" id="otpRow"></div>
+            <div class="resend-row"><span>Resend in <span id="resendTimer">30s</span></span><button class="resend-btn" id="resendBtn" disabled onclick="resendOTP()">Resend OTP</button></div>
+          </div>
+        </div>
+        <button class="submit-btn" id="loginBtn" onclick="doLogin()"><span id="loginTxt">Sign In</span><div class="spin-wrap" id="loginSpin"><div class="spinner"></div></div></button>
+        <p style="text-align:center;font-size:12px;color:var(--muted)">Don't have an account? <a href="#" style="color:var(--accent);cursor:none" onclick="setTab('signup')">Sign up free</a></p>
+      </div>
+
+      <!-- SIGNUP PANEL -->
+      <div class="panel" id="signupPanel">
+        <h2 class="auth-title">CREATE ACCOUNT</h2>
+        <p class="auth-sub">Already have an account? <a href="#" onclick="setTab('login')">Sign in →</a></p>
+        <div class="soc-row">
+          <button class="soc-btn" id="googleSignupBtn">
+            <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Google
+          </button>
+          <button class="soc-btn" id="appleSignupBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Apple
+          </button>
+        </div>
+        <div class="divider"><div class="div-line"></div><span class="div-text">or sign up with email</span><div class="div-line"></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div><label class="form-label">First Name</label><input class="form-input" type="text" id="firstName" placeholder="Arjun"/></div>
+          <div><label class="form-label">Last Name</label><input class="form-input" type="text" id="lastName" placeholder="Sharma"/></div>
+        </div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="signupEmail" placeholder="you@example.com"/><div class="form-error" id="signupEmailErr">Enter a valid email</div></div>
+        <div class="form-group"><label class="form-label">Password</label><div style="position:relative"><input class="form-input" type="password" id="signupPass" placeholder="Min 8 characters" oninput="checkStrength(this.value)"/><button class="eye-btn" onclick="toggleEye('signupPass',this)" type="button">👁</button></div><div class="str-bar"><div class="str-fill" id="strFill"></div></div><div class="str-lbl" id="strLbl">Enter a password</div></div>
+        <div class="terms-row"><div class="chk" id="termsChk" onclick="this.classList.toggle('on');this.textContent=this.classList.contains('on')?'✓':''"></div><p class="terms-txt">I agree to Xzora's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p></div>
+        <button class="submit-btn" id="signupBtn" onclick="doSignup()"><span id="signupTxt">Create My Account</span><div class="spin-wrap" id="signupSpin"><div class="spinner"></div></div></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initCursor, toast, validEmail } from './utils.js';
+import { isFirebaseConfigured } from './firebase-config.js';
+import {
+  loginWithEmail, signupWithEmail, loginWithGoogle, loginWithApple,
+  sendOTP, verifyOTP, resetPassword, onAuth, getUserRole,
+  redirectAfterLogin, mergeLocalCartToFirebase
+} from './auth.js';
+
+initCursor();
+
+// Show not-configured banner if needed
+if (!isFirebaseConfigured()) {
+  document.getElementById('notConfiguredBanner').style.display = 'block';
+}
+
+// If already logged in, redirect
+onAuth(async function(user) {
+  if (user) {
+    var role = await getUserRole(user.uid);
+    redirectAfterLogin(role);
+  }
+});
+
+// TAB SWITCH
+window.setTab = function(tab) {
+  document.getElementById('loginPanel').classList.toggle('on', tab === 'login');
+  document.getElementById('signupPanel').classList.toggle('on', tab === 'signup');
+  document.getElementById('tabLogin').classList.toggle('on', tab === 'login');
+  document.getElementById('tabSignup').classList.toggle('on', tab === 'signup');
+};
+
+// METHOD SWITCH
+var _method = 'email';
+window.setMethod = function(m) {
+  _method = m;
+  document.getElementById('emailMethodBtn').classList.toggle('on', m === 'email');
+  document.getElementById('phoneMethodBtn').classList.toggle('on', m === 'phone');
+  document.getElementById('emailForm').style.display = m === 'email' ? 'block' : 'none';
+  document.getElementById('phoneForm').style.display = m === 'phone' ? 'block' : 'none';
+};
+
+// EYE TOGGLE
+window.toggleEye = function(id, btn) {
+  var inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+};
+
+// PASSWORD STRENGTH
+window.checkStrength = function(v) {
+  var s = 0;
+  if (v.length >= 8) s++;
+  if (/[A-Z]/.test(v)) s++;
+  if (/[0-9]/.test(v)) s++;
+  if (/[^A-Za-z0-9]/.test(v)) s++;
+  var lvl = [
+    {w:'0%',c:'transparent',t:'Enter a password'},
+    {w:'25%',c:'var(--red)',t:'Weak'},
+    {w:'50%',c:'#e88c2a',t:'Fair'},
+    {w:'75%',c:'#e8d52a',t:'Good'},
+    {w:'100%',c:'var(--green)',t:'Strong 💪'}
+  ];
+  document.getElementById('strFill').style.width = lvl[s].w;
+  document.getElementById('strFill').style.background = lvl[s].c;
+  document.getElementById('strLbl').textContent = lvl[s].t;
+  document.getElementById('strLbl').style.color = lvl[s].c || 'var(--muted)';
+};
+
+// LOADING HELPERS
+function showSpin(spinId, txtId) {
+  document.getElementById(spinId).classList.add('on');
+  document.getElementById(txtId).style.visibility = 'hidden';
+}
+function hideSpin(spinId, txtId, txt) {
+  document.getElementById(spinId).classList.remove('on');
+  document.getElementById(txtId).style.visibility = 'visible';
+  if (txt) document.getElementById(txtId).textContent = txt;
+}
+
+// OTP HELPERS
+var _timerInt;
+function buildOTPInputs() {
+  var row = document.getElementById('otpRow');
+  row.innerHTML = '';
+  for (var i = 0; i < 6; i++) {
+    var inp = document.createElement('input');
+    inp.className = 'otp-inp';
+    inp.maxLength = 1;
+    inp.type = 'text';
+    inp.inputMode = 'numeric';
+    inp.dataset.idx = i;
+    row.appendChild(inp);
+  }
+  row.querySelectorAll('.otp-inp').forEach(function(inp, i) {
+    inp.addEventListener('input', function() {
+      if (inp.value && i < 5) row.querySelectorAll('.otp-inp')[i+1].focus();
+      var vals = Array.from(row.querySelectorAll('.otp-inp')).map(function(x) { return x.value; });
+      if (vals.every(function(v) { return v; })) doVerifyOTP(vals.join(''));
+    });
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !inp.value && i > 0) row.querySelectorAll('.otp-inp')[i-1].focus();
+    });
+  });
+}
+function startResendTimer() {
+  var s = 30;
+  var el = document.getElementById('resendTimer');
+  var btn = document.getElementById('resendBtn');
+  btn.disabled = true;
+  clearInterval(_timerInt);
+  _timerInt = setInterval(function() {
+    s--;
+    el.textContent = s + 's';
+    if (s <= 0) { clearInterval(_timerInt); el.textContent = ''; btn.disabled = false; }
+  }, 1000);
+}
+window.resendOTP = async function() {
+  try {
+    var phone = document.getElementById('dialCode').value + document.getElementById('loginPhone').value.trim();
+    await sendOTP(phone);
+    startResendTimer();
+    toast('OTP resent!', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+};
+
+// VERIFY OTP
+async function doVerifyOTP(otp) {
+  showSpin('loginSpin', 'loginTxt');
+  try {
+    var user = await verifyOTP(otp);
+    await mergeLocalCartToFirebase(user.uid);
+    toast('Welcome!', 'success');
+    setTimeout(async function() {
+      var role = await getUserRole(user.uid);
+      redirectAfterLogin(role);
+    }, 700);
+  } catch(e) {
+    toast('Invalid OTP. Try again.', 'error');
+    hideSpin('loginSpin', 'loginTxt', 'Verify OTP');
+  }
+}
+
+// LOGIN
+window.doLogin = async function() {
+  if (!isFirebaseConfigured()) { toast('Firebase not configured. Go to /admin-config.html', 'error'); return; }
+  showSpin('loginSpin', 'loginTxt');
+  try {
+    if (_method === 'email') {
+      var email = document.getElementById('loginEmail').value.trim();
+      var pass = document.getElementById('loginPass').value;
+      var errEl = document.getElementById('emailErr');
+      if (!validEmail(email)) {
+        errEl.classList.add('show');
+        document.getElementById('loginEmail').classList.add('error');
+        hideSpin('loginSpin', 'loginTxt', 'Sign In'); return;
+      }
+      errEl.classList.remove('show');
+      document.getElementById('loginEmail').classList.remove('error');
+      var user = await loginWithEmail(email, pass);
+      await mergeLocalCartToFirebase(user.uid);
+      toast('Welcome back!', 'success');
+      setTimeout(async function() { var role = await getUserRole(user.uid); redirectAfterLogin(role); }, 700);
+    } else {
+      var otpSec = document.getElementById('loginOtpSec');
+      if (!otpSec.classList.contains('on')) {
+        var dial = document.getElementById('dialCode').value;
+        var num = document.getElementById('loginPhone').value.trim();
+        if (!num) { toast('Enter phone number', 'error'); hideSpin('loginSpin', 'loginTxt', 'Sign In'); return; }
+        await sendOTP(dial + num);
+        document.getElementById('otpSentTo').textContent = dial + num;
+        buildOTPInputs();
+        otpSec.classList.add('on');
+        startResendTimer();
+        hideSpin('loginSpin', 'loginTxt', 'Verify OTP');
+        toast('OTP sent!', 'success');
+      }
+    }
+  } catch(e) {
+    toast(e.message, 'error');
+    hideSpin('loginSpin', 'loginTxt', 'Sign In');
+  }
+};
+
+// SIGNUP
+window.doSignup = async function() {
+  if (!isFirebaseConfigured()) { toast('Firebase not configured. Go to /admin-config.html', 'error'); return; }
+  var email = document.getElementById('signupEmail').value.trim();
+  var pass = document.getElementById('signupPass').value;
+  var first = document.getElementById('firstName').value.trim();
+  var last = document.getElementById('lastName').value.trim();
+  var errEl = document.getElementById('signupEmailErr');
+  if (!first) { toast('Enter your first name', 'error'); return; }
+  if (!validEmail(email)) { errEl.classList.add('show'); return; }
+  errEl.classList.remove('show');
+  if (pass.length < 8) { toast('Password must be at least 8 characters', 'error'); return; }
+  if (!document.getElementById('termsChk').classList.contains('on')) { toast('Accept the terms to continue', 'error'); return; }
+  showSpin('signupSpin', 'signupTxt');
+  try {
+    var user = await signupWithEmail(email, pass, first + ' ' + last);
+    await mergeLocalCartToFirebase(user.uid);
+    toast('Account created! Welcome to Xzora 🎉', 'success');
+    setTimeout(function() { window.location.href = 'index.html'; }, 900);
+  } catch(e) {
+    toast(e.message, 'error');
+    hideSpin('signupSpin', 'signupTxt', 'Create My Account');
+  }
+};
+
+// GOOGLE
+document.getElementById('googleLoginBtn').addEventListener('click', async function() {
+  if (!isFirebaseConfigured()) { toast('Firebase not configured', 'error'); return; }
+  try {
+    var user = await loginWithGoogle();
+    await mergeLocalCartToFirebase(user.uid);
+    var role = await getUserRole(user.uid);
+    redirectAfterLogin(role);
+  } catch(e) { toast(e.message, 'error'); }
+});
+document.getElementById('googleSignupBtn').addEventListener('click', async function() {
+  if (!isFirebaseConfigured()) { toast('Firebase not configured', 'error'); return; }
+  try { var user = await loginWithGoogle(); await mergeLocalCartToFirebase(user.uid); window.location.href = 'index.html'; }
+  catch(e) { toast(e.message, 'error'); }
+});
+
+// APPLE
+document.getElementById('appleLoginBtn').addEventListener('click', async function() {
+  if (!isFirebaseConfigured()) { toast('Firebase not configured', 'error'); return; }
+  try { var user = await loginWithApple(); var role = await getUserRole(user.uid); redirectAfterLogin(role); }
+  catch(e) { toast(e.message, 'error'); }
+});
+document.getElementById('appleSignupBtn').addEventListener('click', async function() {
+  if (!isFirebaseConfigured()) { toast('Firebase not configured', 'error'); return; }
+  try { var user = await loginWithApple(); window.location.href = 'index.html'; }
+  catch(e) { toast(e.message, 'error'); }
+});
+
+// FORGOT PASSWORD
+document.getElementById('forgotLink').addEventListener('click', async function(e) {
+  e.preventDefault();
+  var email = document.getElementById('loginEmail').value.trim();
+  if (!validEmail(email)) { toast('Enter your email address first', 'error'); return; }
+  try { await resetPassword(email); toast('Reset email sent! Check your inbox', 'success'); }
+  catch(e) { toast(e.message, 'error'); }
+});
+</script>
+</body>
+</html>

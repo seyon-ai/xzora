@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — Shop Everything</title>
+<link rel="stylesheet" href="main.css"/>
+<style>
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;padding-top:var(--nav-h);overflow:hidden}
+.hero-left{display:flex;flex-direction:column;justify-content:center;padding:80px 60px 80px 80px}
+.hero-eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;opacity:0;animation:fadeUp .8s .2s forwards}
+.hero-title{font-family:var(--font-display);font-size:clamp(68px,7.5vw,116px);line-height:.92;letter-spacing:2px;color:var(--white);margin-bottom:24px;opacity:0;animation:fadeUp .8s .35s forwards}
+.hero-title .italic{font-family:'DM Sans',sans-serif;font-style:italic;font-weight:300;color:var(--accent);font-size:.72em;display:block}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.7;max-width:400px;margin-bottom:40px;opacity:0;animation:fadeUp .8s .5s forwards}
+.hero-actions{display:flex;gap:14px;align-items:center;margin-bottom:56px;opacity:0;animation:fadeUp .8s .65s forwards}
+.hero-stats{display:flex;gap:36px;opacity:0;animation:fadeUp .8s .8s forwards}
+.stat-item .n{font-family:var(--font-display);font-size:30px;color:var(--white);letter-spacing:1px;display:block}
+.stat-item .l{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.hero-right{position:relative;overflow:hidden;display:flex;align-items:center}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:80px 40px 80px 20px;width:100%}
+.hero-card{border-radius:var(--radius);overflow:hidden;background:var(--surface);border:1px solid var(--border);transition:transform .3s,box-shadow .3s;cursor:none;opacity:0;animation:fadeIn .8s forwards}
+.hero-card:nth-child(1){animation-delay:.4s}.hero-card:nth-child(2){animation-delay:.55s;margin-top:40px}.hero-card:nth-child(3){animation-delay:.7s;margin-top:-40px}.hero-card:nth-child(4){animation-delay:.85s}
+.hero-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.hero-card-img{width:100%;aspect-ratio:3/4;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:44px}
+.hero-card-info{padding:10px 12px;display:flex;justify-content:space-between;align-items:center}
+.hero-card-info .name{font-size:11px;color:var(--text)}.hero-card-info .pr{font-size:11px;color:var(--accent);font-weight:500}
+.cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.cat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 14px;text-align:center;cursor:none;transition:all .25s;text-decoration:none;display:block}
+.cat-card:hover{background:var(--surface2);border-color:var(--accent);transform:translateY(-4px)}
+.cat-card .icon{font-size:30px;margin-bottom:8px;display:block}.cat-card .name{font-size:11px;color:var(--muted)}.cat-card:hover .name{color:var(--accent)}
+.products-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.banner-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.banner-card{border-radius:18px;padding:44px;position:relative;overflow:hidden;cursor:none;transition:transform .3s;border:1px solid var(--border)}
+.banner-card:hover{transform:scale(1.01)}
+.banner-main{background:linear-gradient(135deg,#1c1c20,#252528)}
+.b-tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.b-title{font-family:var(--font-display);font-size:44px;letter-spacing:2px;color:var(--white);line-height:1;margin-bottom:8px}
+.b-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.b-deco{position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:90px;opacity:.06}
+.mini-banners{display:flex;flex-direction:column;gap:12px}
+.mini-banner{flex:1;border-radius:14px;padding:26px;border:1px solid var(--border);background:var(--surface);cursor:none;transition:all .2s;text-decoration:none;display:block;position:relative;overflow:hidden}
+.mini-banner:hover{border-color:var(--accent);background:var(--surface2)}
+.mini-banner .mt{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:block}
+.mini-banner .mn{font-family:var(--font-display);font-size:26px;letter-spacing:1px;color:var(--white);margin-bottom:3px}
+.mini-banner .ms{font-size:11px;color:var(--muted)}
+.mini-banner .md{position:absolute;right:14px;bottom:6px;font-size:44px;opacity:.08}
+.ai-section{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.ai-chat-box{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px}
+.ai-msg{display:flex;gap:8px;margin-bottom:12px}
+.ai-av{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.ai-av.u{background:var(--surface);border:1px solid var(--border)}
+.ai-bubble{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--text);line-height:1.5;max-width:240px}
+.ai-bubble.u{background:rgba(232,213,163,.08);border-color:rgba(232,213,163,.15)}
+.ai-input-row{display:flex;gap:8px;margin-top:10px}
+.ai-input-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font-body);font-size:12px;outline:none}
+.ai-input-row input:focus{border-color:var(--accent)}
+.ai-send{padding:9px 14px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:none;transition:background .2s}
+.ai-send:hover{background:var(--accent2)}
+.countdown{display:flex;gap:6px;align-items:center}
+.count-block{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 9px;text-align:center;min-width:42px}
+.count-block .n{font-family:var(--font-display);font-size:20px;color:var(--white);line-height:1;display:block}
+.count-block .l{font-size:8px;color:var(--muted);letter-spacing:1px}
+.count-sep{font-family:var(--font-display);font-size:18px;color:var(--muted2)}
+.deals-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.deal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:none;transition:all .25s;text-decoration:none;display:block}
+.deal-card:hover{border-color:rgba(224,82,82,.3);transform:translateY(-4px)}
+.deal-img{aspect-ratio:1;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:44px}
+.deal-info{padding:10px 12px}
+.deal-info .dn{font-size:11px;color:var(--text);margin-bottom:6px;line-height:1.4}
+.deal-prices{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.deal-prices .dnn{font-size:14px;color:var(--accent);font-weight:500}
+.deal-prices .doo{font-size:10px;color:var(--muted);text-decoration:line-through}
+.deal-prices .dof{font-size:9px;color:var(--red);font-weight:500}
+.deal-bar{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.deal-fill{height:100%;background:var(--red);border-radius:2px}
+.skel-card{background:var(--surface2);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+.skel{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@media(max-width:1024px){.hero{grid-template-columns:1fr}.hero-left{padding:40px 20px}.hero-right{display:none}.cat-grid{grid-template-columns:repeat(3,1fr)}.products-grid{grid-template-columns:repeat(2,1fr)}.banner-grid{grid-template-columns:1fr}.ai-section{grid-template-columns:1fr}.deals-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- PAGE LOADER -->
+<div class="xz-loader" id="xz-loader">
+  <div class="loader-logo">XZ<span>O</span>RA</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div id="xz-cursor"></div>
+<div id="xz-ring"></div>
+
+<!-- NAV -->
+<nav class="xz-nav">
+  <a href="index.html" class="logo">XZ<span>O</span>RA</a>
+  <ul class="nav-links">
+    <li><a href="products.html?cat=electronics">Electronics</a></li>
+    <li><a href="products.html?cat=fashion">Fashion</a></li>
+    <li><a href="products.html?cat=home">Home</a></li>
+    <li><a href="products.html?cat=sports">Sports</a></li>
+    <li><a href="products.html?cat=beauty">Beauty</a></li>
+    <li><a href="products.html?deal=flash">⚡ Deals</a></li>
+  </ul>
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;stroke:var(--muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Search anything..." autocomplete="off"/>
+  </div>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-icon" title="Cart">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="badge cart-count" style="display:none">0</span>
+    </a>
+    <a href="auth.html" class="nav-btn" id="navAuthBtn">Sign In</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">✦ New era of shopping</p>
+    <h1 class="hero-title">SHOP<span class="italic">everything,</span>EVERYWHERE</h1>
+    <p class="hero-sub">Xzora brings you millions of products with AI-powered recommendations, fast delivery, and prices that make you look twice.</p>
+    <div class="hero-actions">
+      <a href="products.html" class="btn btn-primary btn-lg">Start Shopping</a>
+      <a href="seller-login.html" class="btn btn-ghost btn-lg">Sell on Xzora</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><span class="n">2M+</span><span class="l">Products</span></div>
+      <div class="stat-item"><span class="n">50K+</span><span class="l">Sellers</span></div>
+      <div class="stat-item"><span class="n">99%</span><span class="l">Satisfaction</span></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-grid">
+      <div class="hero-card"><div class="hero-card-img">⌚</div><div class="hero-card-info"><span class="name">Smart Watch</span><span class="pr">₹2,499</span></div></div>
+      <div class="hero-card"><div class="hero-card-img">👟</div><div class="hero-card-info"><span class="name">Sneakers</span><span class="pr">₹1,899</span></div></div>
+      <div class="hero-card"><div class="hero-card-img">🎧</div><div class="hero-card-info"><span class="name">Headphones</span><span class="pr">₹3,299</span></div></div>
+      <div class="hero-card"><div class="hero-card-img">💻</div><div class="hero-card-info"><span class="name">Laptop</span><span class="pr">₹54,999</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item"><span class="marquee-dot"></span>Free delivery on orders above ₹499</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>10 million+ happy customers</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>AI-powered recommendations</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Sell on Xzora — zero listing fee</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Worldwide shipping available</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>24/7 AI support chat</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>COD available across India</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Free delivery on orders above ₹499</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>10 million+ happy customers</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>AI-powered recommendations</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Sell on Xzora — zero listing fee</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Worldwide shipping available</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>24/7 AI support chat</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>COD available across India</span>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="section reveal">
+  <div class="section-header">
+    <h2 class="section-title">SHOP BY <span class="accent">CATEGORY</span></h2>
+    <a href="products.html" class="section-link">All Categories →</a>
+  </div>
+  <div class="cat-grid">
+    <a href="products.html?cat=electronics" class="cat-card"><span class="icon">📱</span><span class="name">Electronics</span></a>
+    <a href="products.html?cat=fashion" class="cat-card"><span class="icon">👗</span><span class="name">Fashion</span></a>
+    <a href="products.html?cat=home" class="cat-card"><span class="icon">🏠</span><span class="name">Home & Living</span></a>
+    <a href="products.html?cat=beauty" class="cat-card"><span class="icon">💄</span><span class="name">Beauty</span></a>
+    <a href="products.html?cat=sports" class="cat-card"><span class="icon">⚽</span><span class="name">Sports</span></a>
+    <a href="products.html?cat=books" class="cat-card"><span class="icon">📚</span><span class="name">Books</span></a>
+    <a href="products.html?cat=automotive" class="cat-card"><span class="icon">🚗</span><span class="name">Automotive</span></a>
+    <a href="products.html?cat=toys" class="cat-card"><span class="icon">🧸</span><span class="name">Toys</span></a>
+    <a href="products.html?cat=grocery" class="cat-card"><span class="icon">🌿</span><span class="name">Grocery</span></a>
+    <a href="products.html?cat=health" class="cat-card"><span class="icon">💊</span><span class="name">Health</span></a>
+    <a href="products.html?cat=pets" class="cat-card"><span class="icon">🐾</span><span class="name">Pets</span></a>
+    <a href="products.html?cat=gaming" class="cat-card"><span class="icon">🎮</span><span class="name">Gaming</span></a>
+  </div>
+</section>
+
+<!-- FEATURED PRODUCTS -->
+<section class="section reveal" style="padding-top:0">
+  <div class="section-header">
+    <h2 class="section-title">TRENDING <span class="accent">NOW</span></h2>
+    <a href="products.html" class="section-link">View All →</a>
+  </div>
+  <div id="featuredGrid" class="products-grid">
+    <div class="skel-card"><div class="skel" style="aspect-ratio:1"></div><div style="padding:14px"><div class="skel" style="height:12px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:10px;width:90%"></div></div></div>
+    <div class="skel-card"><div class="skel" style="aspect-ratio:1"></div><div style="padding:14px"><div class="skel" style="height:12px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:10px;width:90%"></div></div></div>
+    <div class="skel-card"><div class="skel" style="aspect-ratio:1"></div><div style="padding:14px"><div class="skel" style="height:12px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:10px;width:90%"></div></div></div>
+    <div class="skel-card"><div class="skel" style="aspect-ratio:1"></div><div style="padding:14px"><div class="skel" style="height:12px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:10px;width:90%"></div></div></div>
+  </div>
+</section>
+
+<!-- BANNER -->
+<section class="section-sm reveal" style="padding-top:0">
+  <div class="banner-grid">
+    <div class="banner-card banner-main">
+      <p class="b-tag">✦ Limited Time</p>
+      <h3 class="b-title">MEGA SALE<br>UP TO 70% OFF</h3>
+      <p class="b-sub">On electronics, fashion & more.</p>
+      <a href="products.html?deal=sale" class="btn btn-primary btn-sm">Shop Sale →</a>
+      <span class="b-deco">🛍️</span>
+    </div>
+    <div class="mini-banners">
+      <a href="seller-login.html" class="mini-banner"><span class="mt">Sell on Xzora</span><p class="mn">START<br>SELLING</p><p class="ms">Zero listing fee.</p><span class="md">🏪</span></a>
+      <a href="#" class="mini-banner"><span class="mt">Download App</span><p class="mn">GET THE<br>APP</p><p class="ms">Faster shopping.</p><span class="md">📱</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- AI SECTION -->
+<section class="section-sm reveal">
+  <div class="ai-section">
+    <div>
+      <div class="tag tag-accent" style="margin-bottom:16px"><span class="pulse pulse-accent"></span>AI-Powered</div>
+      <h3 class="section-title" style="font-size:38px;margin-bottom:12px">YOUR PERSONAL<br>SHOPPING AI</h3>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:28px">Ask Xzora AI anything — find products, compare prices, get recommendations. Available 24/7.</p>
+      <button class="btn btn-primary btn-sm" id="openAiBtn">Try AI Assistant →</button>
+    </div>
+    <div class="ai-chat-box">
+      <div id="aiMessages">
+        <div class="ai-msg"><div class="ai-av u">U</div><div class="ai-bubble u">Show me wireless earbuds under ₹3000</div></div>
+        <div class="ai-msg"><div class="ai-av">X</div><div class="ai-bubble">Found 12 options! Top pick: boAt Airdopes 141 at ₹1,299 — 4.7★, 42hr battery, punchy bass. Add to cart?</div></div>
+      </div>
+      <div id="aiTyping" style="display:none" class="ai-msg"><div class="ai-av">X</div><div class="ai-bubble" style="color:var(--muted)">...</div></div>
+      <div class="ai-input-row">
+        <input type="text" id="aiInput" placeholder="Ask Xzora AI anything..."/>
+        <button class="ai-send" id="aiSendBtn">Send</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FLASH DEALS -->
+<section class="section reveal" style="padding-top:0">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <h2 class="section-title" style="font-size:40px">FLASH <span style="color:var(--red)">DEALS</span></h2>
+      <div class="tag tag-red"><span class="pulse pulse-red"></span>Live Now</div>
+      <div class="countdown">
+        <div class="count-block"><span class="n" id="ch">05</span><span class="l">HRS</span></div>
+        <span class="count-sep">:</span>
+        <div class="count-block"><span class="n" id="cm">32</span><span class="l">MIN</span></div>
+        <span class="count-sep">:</span>
+        <div class="count-block"><span class="n" id="cs">00</span><span class="l">SEC</span></div>
+      </div>
+    </div>
+    <a href="products.html?deal=flash" class="section-link">All Deals →</a>
+  </div>
+  <div class="deals-grid">
+    <a href="products.html" class="deal-card"><div class="deal-img">📷</div><div class="deal-info"><p class="dn">DSLR Camera Kit</p><div class="deal-prices"><span class="dnn">₹32,999</span><span class="doo">₹54,999</span><span class="dof">-40%</span></div><div class="deal-bar"><div class="deal-fill" style="width:72%"></div></div></div></a>
+    <a href="products.html" class="deal-card"><div class="deal-img">🎮</div><div class="deal-info"><p class="dn">Gaming Controller</p><div class="deal-prices"><span class="dnn">₹2,499</span><span class="doo">₹4,999</span><span class="dof">-50%</span></div><div class="deal-bar"><div class="deal-fill" style="width:45%"></div></div></div></a>
+    <a href="products.html" class="deal-card"><div class="deal-img">🧴</div><div class="deal-info"><p class="dn">Skincare Bundle</p><div class="deal-prices"><span class="dnn">₹899</span><span class="doo">₹1,799</span><span class="dof">-50%</span></div><div class="deal-bar"><div class="deal-fill" style="width:88%"></div></div></div></a>
+    <a href="products.html" class="deal-card"><div class="deal-img">🏋️</div><div class="deal-info"><p class="dn">Home Gym Set</p><div class="deal-prices"><span class="dnn">₹4,299</span><span class="doo">₹7,999</span><span class="dof">-46%</span></div><div class="deal-bar"><div class="deal-fill" style="width:30%"></div></div></div></a>
+    <a href="products.html" class="deal-card"><div class="deal-img">🍳</div><div class="deal-info"><p class="dn">Smart Cookware</p><div class="deal-prices"><span class="dnn">₹1,599</span><span class="doo">₹2,999</span><span class="dof">-47%</span></div><div class="deal-bar"><div class="deal-fill" style="width:60%"></div></div></div></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="xz-footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">XZ<span>O</span>RA</div>
+      <p class="footer-tagline">The next generation marketplace. Shop everything, sell everything — powered by AI.</p>
+      <div class="footer-socials">
+        <a href="#" class="social-btn">𝕏</a>
+        <a href="#" class="social-btn">in</a>
+        <a href="#" class="social-btn">▶</a>
+        <a href="#" class="social-btn">📸</a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Shop</h4><ul><li><a href="products.html">All Products</a></li><li><a href="products.html?deal=flash">Flash Deals</a></li><li><a href="products.html?sort=new">New Arrivals</a></li><li><a href="products.html?sort=popular">Best Sellers</a></li></ul></div>
+    <div class="footer-col"><h4>Sell</h4><ul><li><a href="seller-login.html">Start Selling</a></li><li><a href="seller-dashboard.html">Seller Dashboard</a></li><li><a href="seller-help.html">Seller Help</a></li></ul></div>
+    <div class="footer-col"><h4>Support</h4><ul><li><a href="tracking.html">Track Order</a></li><li><a href="#">Returns</a></li><li><a href="#">Help Center</a></li></ul></div>
+    <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About Xzora</a></li><li><a href="#">Careers</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Xzora. All rights reserved.</span>
+    <div class="pay-chips"><span class="pay-chip">COD</span><span class="pay-chip">UPI</span><span class="pay-chip">Visa</span><span class="pay-chip">Mastercard</span><span class="pay-chip">RuPay</span><span class="pay-chip">Stripe</span></div>
+  </div>
+</footer>
+
+<script type="module">
+import { initCursor, hideLoader, updateCartBadge, initScrollReveal } from './utils.js';
+import { requireConfig } from './firebase-config.js';
+import { onAuth } from './auth.js';
+import { listenCart, addToCart } from './cart.js';
+
+// Init always — even without Firebase
+initCursor();
+initScrollReveal();
+setTimeout(hideLoader, 600);
+
+// Show config banner if not set up
+requireConfig();
+
+// Auth state
+onAuth(function(user) {
+  var btn = document.getElementById('navAuthBtn');
+  if (user && btn) {
+    btn.textContent = (user.displayName || 'Account').split(' ')[0];
+    btn.href = 'profile.html';
+  }
+});
+
+// Cart badge
+listenCart(function(items) {
+  updateCartBadge(items.reduce(function(s, i) { return s + (i.qty||1); }, 0));
+});
+
+// Countdown
+var secs = 5*3600 + 32*60;
+setInterval(function() {
+  secs = secs > 0 ? secs - 1 : 6*3600;
+  var h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
+  document.getElementById('ch').textContent = String(h).padStart(2,'0');
+  document.getElementById('cm').textContent = String(m).padStart(2,'0');
+  document.getElementById('cs').textContent = String(s).padStart(2,'0');
+}, 1000);
+
+// Search
+document.getElementById('searchInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && this.value.trim()) {
+    window.location.href = 'products.html?q=' + encodeURIComponent(this.value.trim());
+  }
+});
+
+// Load featured products
+async function loadFeatured() {
+  var grid = document.getElementById('featuredGrid');
+  try {
+    var { getFeaturedProducts } = await import('./products.js');
+    var products = await getFeaturedProducts(4);
+    if (!products.length) return; // keep skeleton
+    grid.innerHTML = products.map(function(p) {
+      return '<div class="product-card" onclick="window.location=\'product-detail.html?id=' + p.id + '\'">' +
+        (p.discount ? '<span class="badge badge-sale">-' + p.discount + '%</span>' : '') +
+        '<div class="product-img">' +
+          (p.imageUrl ? '<img src="' + p.imageUrl + '" alt="' + p.name + '" loading="lazy"/>' : (p.emoji || '📦')) +
+          '<div class="wish-btn" onclick="event.stopPropagation();this.classList.toggle(\'active\');this.textContent=this.classList.contains(\'active\')?\'♥\':\'♡\'">♡</div>' +
+          '<div class="product-hover-actions">' +
+            '<button class="btn btn-primary" style="flex:1;padding:9px;font-size:10px" onclick="event.stopPropagation();doAdd(event,' + JSON.stringify(p).replace(/"/g,'&quot;') + ')">Add to Cart</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="product-info">' +
+          '<p class="product-brand">' + (p.brand||'') + '</p>' +
+          '<p class="product-name">' + p.name + '</p>' +
+          '<div class="product-price-row">' +
+            '<span class="price">₹' + Number(p.price).toLocaleString('en-IN') + '</span>' +
+            (p.originalPrice ? '<span class="price-old">₹' + Number(p.originalPrice).toLocaleString('en-IN') + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    // No products yet — clear skeleton with empty message
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:13px">No featured products yet. <a href="seller-login.html" style="color:var(--accent)">Add products as a seller →</a></div>';
+  }
+}
+loadFeatured();
+
+window.doAdd = async function(e, p) {
+  e.stopPropagation();
+  var btn = e.currentTarget;
+  btn.textContent = 'Adding...'; btn.disabled = true;
+  try {
+    await addToCart(p);
+    btn.textContent = '✓ Added'; btn.style.background = 'var(--green)';
+    setTimeout(function() { btn.textContent = 'Add to Cart'; btn.style.background = ''; btn.disabled = false; }, 1600);
+  } catch(err) {
+    btn.textContent = 'Add to Cart'; btn.disabled = false;
+  }
+};
+
+// AI Chat
+var chatHistory = [];
+var aiInput = document.getElementById('aiInput');
+var aiSendBtn = document.getElementById('aiSendBtn');
+
+async function sendAI() {
+  var msg = aiInput.value.trim();
+  if (!msg) return;
+  aiInput.value = '';
+  aiSendBtn.disabled = true;
+  document.getElementById('aiTyping').style.display = 'flex';
+  var msgs = document.getElementById('aiMessages');
+  msgs.innerHTML += '<div class="ai-msg"><div class="ai-av u">U</div><div class="ai-bubble u">' + msg + '</div></div>';
+  try {
+    var { supportChat } = await import('./ai.js');
+    var reply = await supportChat(chatHistory, msg);
+    chatHistory.push({role:'user',content:msg}, {role:'assistant',content:reply});
+    msgs.innerHTML += '<div class="ai-msg"><div class="ai-av">X</div><div class="ai-bubble">' + reply + '</div></div>';
+  } catch(e) {
+    msgs.innerHTML += '<div class="ai-msg"><div class="ai-av">X</div><div class="ai-bubble" style="color:var(--red)">AI not configured. Set your Groq key in <a href="admin-config.html" style="color:var(--accent)">Config Panel</a>.</div></div>';
+  } finally {
+    document.getElementById('aiTyping').style.display = 'none';
+    aiSendBtn.disabled = false;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+aiSendBtn.addEventListener('click', sendAI);
+aiInput.addEventListener('keydown', function(e) { if(e.key==='Enter') sendAI(); });
+</script>
+</body>
+</html>

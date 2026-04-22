@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA Seller — Products</title>
+<link rel="stylesheet" href="seller.css"/>
+<style>
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:28px;width:90%;max-width:620px;max-height:90vh;overflow-y:auto}
+.modal::-webkit-scrollbar{width:3px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-family:var(--font-display);font-size:24px;letter-spacing:2px;color:var(--white)}
+.modal-close{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:none;color:var(--muted);cursor:none;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+.img-preview{width:100%;height:150px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:10px;overflow:hidden;border:1px solid var(--border)}
+.img-preview img{width:100%;height:100%;object-fit:cover}
+.img-upload-area{border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:none;transition:border-color .2s;margin-bottom:14px}
+.img-upload-area:hover{border-color:var(--accent)}
+.img-upload-area input[type=file]{display:none}
+.img-upload-icon{font-size:24px;margin-bottom:6px}
+.img-upload-text{font-size:12px;color:var(--muted)}
+.prod-thumb{width:44px;height:44px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden;border:1px solid var(--border)}
+.prod-thumb img{width:100%;height:100%;object-fit:cover}
+.prod-name-cell{font-size:13px;color:var(--text)}
+.prod-brand-cell{font-size:10px;color:var(--muted)}
+.empty-table{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+
+<aside class="sidebar">
+  <div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Seller Portal</div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">S</div><div><p class="sb-uname" id="sbName">Seller</p><p class="sb-uemail" id="sbEmail"></p></div></div>
+  <nav class="sb-nav">
+    <a href="seller-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a>
+    <a href="seller-products.html" class="sb-item on"><span class="sb-icon">📦</span>Products</a>
+    <a href="seller-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>Orders</a>
+    <a href="seller-analytics.html" class="sb-item"><span class="sb-icon">📊</span>Analytics</a>
+    <a href="seller-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Tools</a>
+    <a href="seller-help.html" class="sb-item"><span class="sb-icon">❓</span>Help</a>
+  </nav>
+  <div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div>
+</aside>
+
+<div class="main-wrap">
+  <div class="top-bar">
+    <span class="page-title">MY PRODUCTS</span>
+    <div class="top-actions">
+      <button class="tb-btn tb-primary" onclick="openModal()">+ Add Product</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="card" style="margin-bottom:0;padding:0;overflow:hidden">
+      <table>
+        <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Sales</th><th>Actions</th></tr></thead>
+        <tbody id="productsTbl">
+          <tr><td colspan="7" class="empty-table">Loading products...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT PRODUCT MODAL -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">ADD PRODUCT</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+
+    <!-- Image -->
+    <div class="img-preview" id="imgPreview">📦</div>
+    <div class="img-upload-area" onclick="document.getElementById('imgInput').click()">
+      <input type="file" id="imgInput" accept="image/*" onchange="handleImgSelect(this)"/>
+      <div class="img-upload-icon">📸</div>
+      <div class="img-upload-text">Click to upload product image (optional)</div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Product Name *</label>
+        <input class="form-input" type="text" id="pName" placeholder="e.g. Sony WH-1000XM5"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Brand</label>
+        <input class="form-input" type="text" id="pBrand" placeholder="e.g. Sony"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select class="form-select" id="pCat">
+          <option value="electronics">Electronics</option>
+          <option value="fashion">Fashion</option>
+          <option value="home">Home & Living</option>
+          <option value="beauty">Beauty</option>
+          <option value="sports">Sports</option>
+          <option value="gaming">Gaming</option>
+          <option value="books">Books</option>
+          <option value="toys">Toys</option>
+          <option value="grocery">Grocery</option>
+          <option value="health">Health</option>
+          <option value="automotive">Automotive</option>
+          <option value="pets">Pets</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stock Quantity</label>
+        <input class="form-input" type="number" id="pStock" placeholder="100" min="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Selling Price (₹) *</label>
+        <input class="form-input" type="number" id="pPrice" placeholder="24999" min="1"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Original Price (₹) <span style="color:var(--muted);font-size:10px">for discount %</span></label>
+        <input class="form-input" type="number" id="pOrigPrice" placeholder="29999" min="0"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-input" id="pDesc" placeholder="Describe your product..." style="height:80px;resize:none"></textarea>
+    </div>
+
+    <!-- AI Generate -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="tb-btn tb-ghost" id="aiDescBtn" onclick="generateAIDesc()" style="font-size:11px;display:flex;align-items:center;gap:6px">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0"></span>
+        AI Generate Description
+      </button>
+      <button class="tb-btn tb-ghost" id="aiTagsBtn" onclick="generateAITags()" style="font-size:11px;display:flex;align-items:center;gap:6px">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0"></span>
+        AI Generate Tags
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:10px">
+      <button class="tb-btn tb-primary" style="flex:1;padding:13px;font-size:13px" id="saveProductBtn" onclick="saveProduct()">
+        Save Product
+      </button>
+      <button class="tb-btn tb-ghost" onclick="closeModal()" style="padding:13px 22px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireSeller, logout } from './auth.js';
+import { getSellerProducts, addProduct, updateProduct, deleteProduct } from './products.js';
+import { generateProductDescription, generateProductTags } from './ai.js';
+
+initCursor();
+
+var sellerId = null;
+var sellerName = '';
+var editId = null;
+var selectedFile = null;
+
+// Init
+requireSeller().then(function(user) {
+  sellerId = user.uid;
+  sellerName = user.displayName || '';
+  document.getElementById('sbAvatar').textContent = (user.displayName || user.email || 'S').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent = user.displayName || 'Seller';
+  document.getElementById('sbEmail').textContent = user.email || '';
+  loadProducts();
+}).catch(function(e) {
+  console.warn('Seller auth error:', e.message);
+});
+
+document.getElementById('logoutBtn').onclick = function() { logout(); };
+
+// ── LOAD PRODUCTS ──
+async function loadProducts() {
+  var tbl = document.getElementById('productsTbl');
+  tbl.innerHTML = '<tr><td colspan="7" class="empty-table">Loading...</td></tr>';
+  try {
+    var products = await getSellerProducts(sellerId);
+    if (!products.length) {
+      tbl.innerHTML = '<tr><td colspan="7" class="empty-table">No products yet.<br><br><button class="tb-btn tb-primary" onclick="openModal()" style="font-size:12px">+ Add Your First Product</button></td></tr>';
+      return;
+    }
+    tbl.innerHTML = products.map(function(p) {
+      var thumbHtml = p.imageUrl
+        ? '<div class="prod-thumb"><img src="' + p.imageUrl + '" loading="lazy"/></div>'
+        : '<div class="prod-thumb">' + (p.emoji || '📦') + '</div>';
+      var statusClass = p.status === 'active' ? 'sp-active' : p.status === 'pending' ? 'sp-pending' : 'sp-inactive';
+      return '<tr>' +
+        '<td><div style="display:flex;align-items:center;gap:10px">' + thumbHtml +
+          '<div><p class="prod-name-cell">' + p.name + '</p><p class="prod-brand-cell">' + (p.brand || '') + '</p></div></div></td>' +
+        '<td>' + (p.category || '—') + '</td>' +
+        '<td>₹' + Number(p.price).toLocaleString('en-IN') + '</td>' +
+        '<td>' + (p.stock !== undefined ? p.stock : '∞') + '</td>' +
+        '<td><span class="status-pill ' + statusClass + '">' + (p.status || 'active') + '</span></td>' +
+        '<td>' + (p.sales || 0) + '</td>' +
+        '<td><div style="display:flex;gap:6px">' +
+          '<button class="tb-btn tb-ghost" style="padding:5px 10px;font-size:11px" onclick="doEdit(\'' + p.id + '\')">Edit</button>' +
+          '<button class="tb-btn" style="padding:5px 10px;font-size:11px;background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.2)" onclick="doDelete(\'' + p.id + '\')">Delete</button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+  } catch(e) {
+    tbl.innerHTML = '<tr><td colspan="7" class="empty-table" style="color:var(--red)">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+// ── MODAL ──
+window.openModal = function() {
+  editId = null;
+  selectedFile = null;
+  document.getElementById('modalTitle').textContent = 'ADD PRODUCT';
+  document.getElementById('imgPreview').innerHTML = '📦';
+  ['pName','pBrand','pStock','pPrice','pOrigPrice','pDesc'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('pCat').value = 'electronics';
+  document.getElementById('productModal').classList.add('open');
+};
+
+window.closeModal = function() {
+  document.getElementById('productModal').classList.remove('open');
+  editId = null;
+  selectedFile = null;
+};
+
+window.doEdit = async function(id) {
+  // Load product data and fill form
+  try {
+    var { getProduct } = await import('./products.js');
+    var p = await getProduct(id);
+    if (!p) { toast('Product not found', 'error'); return; }
+    editId = id;
+    document.getElementById('modalTitle').textContent = 'EDIT PRODUCT';
+    document.getElementById('pName').value = p.name || '';
+    document.getElementById('pBrand').value = p.brand || '';
+    document.getElementById('pCat').value = p.category || 'electronics';
+    document.getElementById('pStock').value = p.stock || '';
+    document.getElementById('pPrice').value = p.price || '';
+    document.getElementById('pOrigPrice').value = p.originalPrice || '';
+    document.getElementById('pDesc').value = p.description || '';
+    document.getElementById('imgPreview').innerHTML = p.imageUrl
+      ? '<img src="' + p.imageUrl + '" alt="product"/>'
+      : (p.emoji || '📦');
+    document.getElementById('productModal').classList.add('open');
+  } catch(e) { toast(e.message, 'error'); }
+};
+
+window.doDelete = async function(id) {
+  if (!confirm('Delete this product? This cannot be undone.')) return;
+  try {
+    await deleteProduct(id);
+    toast('Product deleted', 'success');
+    loadProducts();
+  } catch(e) { toast(e.message, 'error'); }
+};
+
+window.handleImgSelect = function(input) {
+  if (input.files && input.files[0]) {
+    selectedFile = input.files[0];
+    var url = URL.createObjectURL(selectedFile);
+    document.getElementById('imgPreview').innerHTML = '<img src="' + url + '" alt="preview"/>';
+  }
+};
+
+// ── SAVE PRODUCT ──
+window.saveProduct = async function() {
+  var name = document.getElementById('pName').value.trim();
+  var price = parseFloat(document.getElementById('pPrice').value);
+  if (!name) { toast('Product name is required', 'error'); return; }
+  if (!price || price <= 0) { toast('Valid selling price is required', 'error'); return; }
+
+  var btn = document.getElementById('saveProductBtn');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  try {
+    var origPrice = parseFloat(document.getElementById('pOrigPrice').value) || price;
+    var discount = origPrice > price ? Math.round((1 - price / origPrice) * 100) : 0;
+    var data = {
+      name:          name,
+      brand:         document.getElementById('pBrand').value.trim(),
+      category:      document.getElementById('pCat').value,
+      price:         price,
+      originalPrice: origPrice,
+      stock:         parseInt(document.getElementById('pStock').value) || 0,
+      description:   document.getElementById('pDesc').value.trim(),
+      sellerId:      sellerId,
+      sellerName:    sellerName,
+      discount:      discount,
+      emoji:         '📦',
+    };
+
+    if (editId) {
+      await updateProduct(editId, data, selectedFile);
+      toast('Product updated!', 'success');
+    } else {
+      await addProduct(data, selectedFile);
+      toast('Product added successfully!', 'success');
+    }
+    closeModal();
+    loadProducts();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  } finally {
+    btn.textContent = 'Save Product';
+    btn.disabled = false;
+  }
+};
+
+// ── AI GENERATE ──
+window.generateAIDesc = async function() {
+  var name = document.getElementById('pName').value.trim();
+  var brand = document.getElementById('pBrand').value.trim();
+  var cat = document.getElementById('pCat').value;
+  if (!name) { toast('Enter product name first', 'error'); return; }
+  var btn = document.getElementById('aiDescBtn');
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  try {
+    var desc = await generateProductDescription({ name: name, brand: brand, category: cat, price: document.getElementById('pPrice').value });
+    document.getElementById('pDesc').value = desc;
+    toast('Description generated!', 'success');
+  } catch(e) {
+    toast('AI error: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0"></span> AI Generate Description';
+    btn.disabled = false;
+  }
+};
+
+window.generateAITags = async function() {
+  var name = document.getElementById('pName').value.trim();
+  if (!name) { toast('Enter product name first', 'error'); return; }
+  var btn = document.getElementById('aiTagsBtn');
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  try {
+    var tags = await generateProductTags({ name: name, brand: document.getElementById('pBrand').value, category: document.getElementById('pCat').value });
+    toast('Tags: ' + (Array.isArray(tags) ? tags.slice(0,5).join(', ') : tags), 'success');
+  } catch(e) {
+    toast('AI error: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0"></span> AI Generate Tags';
+    btn.disabled = false;
+  }
+};
+</script>
+</body>
+</html>

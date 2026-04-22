@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA Seller — Help</title>
+<link rel="stylesheet" href="seller.css"/>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar">
+  <div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Seller Portal</div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">S</div><div><p class="sb-uname" id="sbName">Seller</p></div></div>
+  <nav class="sb-nav">
+    <a href="seller-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a>
+    <a href="seller-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a>
+    <a href="seller-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>Orders</a>
+    <a href="seller-analytics.html" class="sb-item"><span class="sb-icon">📊</span>Analytics</a>
+    <a href="seller-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Tools</a>
+    <a href="seller-help.html" class="sb-item on"><span class="sb-icon">❓</span>Help</a>
+  </nav>
+  <div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div>
+</aside>
+<div class="main-wrap">
+  <div class="top-bar"><span class="page-title">HELP CENTER</span></div>
+  <div class="content">
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <div class="card-title">Frequently Asked Questions</div>
+          ${[['How do I list a product?','Go to Products → Add Product. Fill in product details, upload images, set price and stock. AI can auto-generate descriptions.'],['What is the commission rate?','Xzora charges 5% commission on each successful sale. This is deducted from your earnings automatically.'],['When do I get paid?','Payments are processed every 7 days. COD orders are settled after delivery confirmation.'],['How do I update order status?','Go to Orders page, find the order, and use the status dropdown to update it to Processing, Shipped, or Delivered.'],['Can I offer discounts?','Yes! Set an Original Price higher than your Selling Price and the discount % will show automatically.'],['How does AI help me?','Use AI Tools to auto-generate descriptions, search tags, and marketing copy. It saves hours of manual work.']].map(([q,a])=>`<div style="border-bottom:1px solid var(--border);padding:14px 0"><p style="font-size:13px;color:var(--text);margin-bottom:6px;cursor:none" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">❓ ${q}</p><p style="font-size:12px;color:var(--muted);line-height:1.6;display:none">${a}</p></div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title">Commission Structure</div>
+          <table style="margin-bottom:0">
+            <thead><tr><th>Category</th><th>Commission</th></tr></thead>
+            <tbody>
+              <tr><td>Electronics</td><td>5%</td></tr>
+              <tr><td>Fashion</td><td>5%</td></tr>
+              <tr><td>Home & Living</td><td>5%</td></tr>
+              <tr><td>Beauty</td><td>5%</td></tr>
+              <tr><td>All Categories</td><td>5%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title">Quick Guide</div>
+          ${[['1','Add Products','Use Products tab to list items. AI generates descriptions.'],['2','Manage Orders','Track and update order statuses in real-time.'],['3','View Analytics','Monitor revenue, sales, and commissions.'],['4','Use AI Tools','Generate descriptions, tags, and marketing copy.']].map(([n,t,d])=>`<div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start"><div style="width:26px;height:26px;border-radius:7px;background:rgba(232,213,163,.1);border:1px solid rgba(232,213,163,.2);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--accent);flex-shrink:0;font-weight:600">${n}</div><div><p style="font-size:13px;color:var(--text);margin-bottom:2px">${t}</p><p style="font-size:11px;color:var(--muted)">${d}</p></div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initCursor } from './utils.js';
+import { requireSeller, logout } from './auth.js';
+initCursor();
+requireSeller().then(user=>{ document.getElementById('sbAvatar').textContent=(user.displayName||'S').charAt(0).toUpperCase(); document.getElementById('sbName').textContent=user.displayName||'Seller'; });
+document.getElementById('logoutBtn').onclick=()=>logout();
+</script>
+</body>
+</html>

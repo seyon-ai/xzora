@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — Config</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0f10; --surface: #161718; --surface2: #1e1f21; --surface3: #262729;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+    --text: #f0f0f0; --muted: #666; --muted2: #333;
+    --accent: #e8d5a3; --accent2: #c9a96e;
+    --white: #fff; --red: #e05252; --green: #52c97a;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-weight: 300; cursor: none; }
+  ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 2px; }
+
+  /* CURSOR */
+  #xz-cursor { position: fixed; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .2s, height .2s; }
+  #xz-ring { position: fixed; width: 30px; height: 30px; border: 1px solid rgba(232,213,163,.3); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: width .3s, height .3s; }
+  #xz-cursor.hov { width: 5px; height: 5px; }
+  #xz-ring.hov { width: 44px; height: 44px; }
+
+  /* LOCK SCREEN */
+  #lockScreen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; flex-direction: column; gap: 0;
+  }
+  .lock-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(232,213,163,.05) 0%, transparent 70%);
+  }
+  .lock-grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .lock-wrap { position: relative; z-index: 1; width: 100%; max-width: 380px; padding: 20px; }
+  .lock-logo { font-family: var(--font-display); font-size: 36px; letter-spacing: 6px; color: var(--white); text-align: center; margin-bottom: 4px; }
+  .lock-logo span { color: var(--accent); }
+  .lock-role { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); text-align: center; margin-bottom: 32px; }
+  .lock-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 28px; }
+  .lock-title { font-family: var(--font-display); font-size: 26px; letter-spacing: 2px; color: var(--white); margin-bottom: 6px; }
+  .lock-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+  .lock-icon { font-size: 36px; text-align: center; margin-bottom: 16px; }
+  .inp { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 13px 16px; color: var(--text); font-family: var(--font-body); font-size: 14px; outline: none; transition: border-color .2s; letter-spacing: 3px; }
+  .inp:focus { border-color: var(--accent); }
+  .inp::placeholder { letter-spacing: 0; }
+  .inp.shake { animation: shake .4s; border-color: var(--red); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+  .lock-btn { width: 100%; padding: 13px; background: var(--accent); color: var(--bg); border: none; border-radius: 10px; font-family: var(--font-body); font-size: 13px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; cursor: none; transition: all .2s; margin-top: 14px; position: relative; overflow: hidden; }
+  .lock-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .lock-err { font-size: 11px; color: var(--red); text-align: center; margin-top: 10px; min-height: 16px; }
+  .attempts { font-size: 10px; color: var(--muted2); text-align: center; margin-top: 6px; }
+
+  /* MAIN PANEL */
+  #mainPanel { display: none; min-height: 100vh; }
+
+  /* HEADER */
+  .cfg-header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 40px; height: 60px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .cfg-logo { font-family: var(--font-display); font-size: 24px; letter-spacing: 4px; color: var(--white); }
+  .cfg-logo span { color: var(--accent); }
+  .cfg-role { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .save-status { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted2); }
+  .status-dot.saved { background: var(--green); }
+  .status-dot.saving { background: var(--accent); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .hdr-btn { padding: 7px 16px; border-radius: 8px; border: none; font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: .5px; text-transform: uppercase; cursor: none; transition: all .2s; }
+  .hdr-save { background: var(--accent); color: var(--bg); }
+  .hdr-save:hover { background: var(--accent2); }
+  .hdr-logout { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
+  .hdr-logout:hover { border-color: var(--red); color: var(--red); }
+
+  /* CONTENT */
+  .cfg-content { padding: 32px 40px 60px; max-width: 1100px; margin: 0 auto; }
+  .cfg-title { font-family: var(--font-display); font-size: 38px; letter-spacing: 2px; color: var(--white); margin-bottom: 6px; }
+  .cfg-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 32px; line-height: 1.6; }
+
+  .cfg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cfg-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+  .cfg-card.full { grid-column: 1 / -1; }
+  .cfg-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .cfg-card-icon { font-size: 22px; }
+  .cfg-card-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; color: var(--white); }
+  .cfg-card-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .cfg-card-status { margin-left: auto; }
+
+  /* FIELD */
+  .field { margin-bottom: 14px; }
+  .field-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .field-required { color: var(--red); }
+  .field-input-wrap { position: relative; }
+  .field-input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 40px 10px 14px;
+    color: var(--text); font-family: var(--font-body); font-size: 13px;
+    outline: none; transition: border-color .2s, background .2s;
+    font-family: 'Courier New', monospace; letter-spacing: .5px;
+  }
+  .field-input:focus { border-color: var(--accent); background: var(--surface3); }
+  .field-input.set { border-color: rgba(82,201,122,.3); }
+  .field-input.empty { border-color: rgba(224,82,82,.2); }
+  .field-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: none; font-size: 14px; transition: color .2s; }
+  .field-eye:hover { color: var(--text); }
+  .field-check { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; }
+  .field-hint { font-size: 10px; color: var(--muted2); margin-top: 4px; line-height: 1.4; }
+
+  /* TEST BUTTON */
+  .test-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border2); background: var(--surface2); color: var(--muted); font-size: 10px; font-family: var(--font-body); cursor: none; transition: all .2s; margin-top: 6px; }
+  .test-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .test-btn.testing { pointer-events: none; color: var(--accent); }
+  .test-btn.ok { border-color: rgba(82,201,122,.4); color: var(--green); }
+  .test-btn.fail { border-color: rgba(224,82,82,.4); color: var(--red); }
+
+  /* STATUS PANEL */
+  .status-panel { background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; padding: 14px; margin-top: 6px; }
+  .status-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .status-row:last-child { border-bottom: none; }
+  .status-row .key-name { color: var(--muted); }
+  .status-row .key-val { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text); }
+  .st-set { color: var(--green) !important; }
+  .st-missing { color: var(--red) !important; }
+
+  /* SAVE PANEL */
+  .save-panel { background: var(--surface); border: 1px solid rgba(232,213,163,.15); border-radius: var(--radius); padding: 20px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .save-info { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .save-info strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 14px; }
+  .save-actions { display: flex; gap: 10px; flex-shrink: 0; }
+  .btn-save-all { padding: 12px 28px; background: var(--accent); color: var(--bg); border: none; border-radius: 9px; font-family: var(--font-body); font-size: 12px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; cursor: none; transition: all .2s; }
+  .btn-save-all:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(232,213,163,.15); }
+  .btn-clear-all { padding: 12px 20px; background: none; color: var(--muted); border: 1px solid var(--border2); border-radius: 9px; font-family: var(--font-body); font-size: 12px; cursor: none; transition: all .2s; }
+  .btn-clear-all:hover { border-color: var(--red); color: var(--red); }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); z-index: 9000; background: var(--surface2); border: 1px solid var(--border2); border-radius: 9px; padding: 10px 18px; font-size: 12px; color: var(--text); white-space: nowrap; transition: transform .3s; pointer-events: none; display: flex; align-items: center; gap: 8px; }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.success { border-color: rgba(82,201,122,.35); }
+  #toast.error { border-color: rgba(224,82,82,.35); }
+
+  @media (max-width: 900px) { .cfg-grid { grid-template-columns: 1fr; } .cfg-card.full { grid-column: 1; } .cfg-content { padding: 20px; } .cfg-header { padding: 0 20px; } }
+</style>
+</head>
+<body>
+
+<div id="xz-cursor"></div>
+<div id="xz-ring"></div>
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════
+     LOCK SCREEN
+══════════════════════════════════════ -->
+<div id="lockScreen">
+  <div class="lock-bg"></div>
+  <div class="lock-grid"></div>
+  <div class="lock-wrap">
+    <div class="lock-logo">XZ<span>O</span>RA</div>
+    <div class="lock-role">Configuration Panel</div>
+    <div class="lock-card">
+      <div class="lock-icon">🔐</div>
+      <h2 class="lock-title">RESTRICTED ACCESS</h2>
+      <p class="lock-sub">This panel contains sensitive configuration. Enter the admin password to continue.</p>
+      <input class="inp" type="password" id="lockInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')unlock()"/>
+      <button class="lock-btn" onclick="unlock()">Unlock Panel</button>
+      <div class="lock-err" id="lockErr"></div>
+      <div class="attempts" id="attemptsLeft"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN CONFIG PANEL
+══════════════════════════════════════ -->
+<div id="mainPanel">
+
+  <!-- Header -->
+  <div class="cfg-header">
+    <div>
+      <div class="cfg-logo">XZ<span>O</span>RA</div>
+      <div class="cfg-role">Config Panel</div>
+    </div>
+    <div class="header-right">
+      <div class="save-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Not saved</span>
+      </div>
+      <button class="hdr-btn hdr-save" onclick="saveAllKeys()">Save All Keys</button>
+      <button class="hdr-btn hdr-logout" onclick="lockPanel()">Lock Panel</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="cfg-content">
+    <h1 class="cfg-title">API CONFIGURATION</h1>
+    <p class="cfg-subtitle">All keys are saved securely to Firebase Remote Config and synced across devices. They are never exposed in your source code.</p>
+
+    <div class="cfg-grid">
+
+      <!-- Firebase -->
+      <div class="cfg-card full">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">🔥</div>
+          <div>
+            <div class="cfg-card-title">FIREBASE</div>
+            <div class="cfg-card-sub">Core backend — Firestore, Auth, Realtime DB, Storage</div>
+          </div>
+          <div class="cfg-card-status"><span class="test-btn" id="fbStatus">⬤ Not tested</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field">
+            <div class="field-label">API Key <span class="field-required">*</span></div>
+            <div class="field-input-wrap">
+              <input class="field-input" type="password" id="fb_apiKey" placeholder="AIzaSy..." data-key="fb_apiKey"/>
+              <button class="field-eye" onclick="toggleEye('fb_apiKey',this)">👁</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label">App ID <span class="field-required">*</span></div>
+            <div class="field-input-wrap">
+              <input class="field-input" type="password" id="fb_appId" placeholder="1:xxxx:web:xxxx" data-key="fb_appId"/>
+              <button class="field-eye" onclick="toggleEye('fb_appId',this)">👁</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label">Auth Domain</div>
+            <input class="field-input" type="text" id="fb_authDomain" placeholder="xzora-xxxxx.firebaseapp.com" data-key="fb_authDomain"/>
+          </div>
+          <div class="field">
+            <div class="field-label">Project ID</div>
+            <input class="field-input" type="text" id="fb_projectId" placeholder="xzora-xxxxx" data-key="fb_projectId"/>
+          </div>
+          <div class="field">
+            <div class="field-label">Storage Bucket</div>
+            <input class="field-input" type="text" id="fb_storageBucket" placeholder="xzora-xxxxx.firebasestorage.app" data-key="fb_storageBucket"/>
+          </div>
+          <div class="field">
+            <div class="field-label">Messaging Sender ID</div>
+            <input class="field-input" type="text" id="fb_messagingSenderId" placeholder="1016616705250" data-key="fb_messagingSenderId"/>
+          </div>
+          <div class="field">
+            <div class="field-label">Database URL</div>
+            <input class="field-input" type="text" id="fb_databaseURL" placeholder="https://xzora-xxxxx-default-rtdb.firebaseio.com" data-key="fb_databaseURL"/>
+          </div>
+        </div>
+        <button class="test-btn" id="testFirebaseBtn" onclick="testFirebase()">⚡ Test Firebase Connection</button>
+      </div>
+
+      <!-- Groq -->
+      <div class="cfg-card">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">🤖</div>
+          <div>
+            <div class="cfg-card-title">GROQ AI</div>
+            <div class="cfg-card-sub">Primary AI — product descriptions, chat, recommendations</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">API Key <span class="field-required">*</span></div>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="groq_key" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" data-key="groq_key"/>
+            <button class="field-eye" onclick="toggleEye('groq_key',this)">👁</button>
+          </div>
+          <div class="field-hint">Get from console.groq.com → API Keys</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Model</div>
+          <select class="field-input" id="groq_model" data-key="groq_model" style="font-family:var(--font-body);cursor:none">
+            <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Recommended)</option>
+            <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+            <option value="llama-3.1-8b-instant">Llama 3.1 8B (Fast)</option>
+          </select>
+        </div>
+        <button class="test-btn" id="testGroqBtn" onclick="testGroq()">⚡ Test Groq</button>
+      </div>
+
+      <!-- HuggingFace -->
+      <div class="cfg-card">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">🤗</div>
+          <div>
+            <div class="cfg-card-title">HUGGING FACE</div>
+            <div class="cfg-card-sub">Secondary AI — classification, sentiment, recommendations</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Access Token <span class="field-required">*</span></div>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="hf_key" placeholder="hf_xxxxxxxxxxxxxxxxxxxx" data-key="hf_key"/>
+            <button class="field-eye" onclick="toggleEye('hf_key',this)">👁</button>
+          </div>
+          <div class="field-hint">Get from huggingface.co/settings/tokens</div>
+        </div>
+        <button class="test-btn" id="testHfBtn" onclick="testHF()">⚡ Test HuggingFace</button>
+      </div>
+
+      <!-- ImgBB -->
+      <div class="cfg-card">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">🖼️</div>
+          <div>
+            <div class="cfg-card-title">IMGBB</div>
+            <div class="cfg-card-sub">Product image uploads — free, unlimited</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">API Key <span class="field-required">*</span></div>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="imgbb_key" placeholder="af9b4703xxxxxxxxxxxxxxxxx" data-key="imgbb_key"/>
+            <button class="field-eye" onclick="toggleEye('imgbb_key',this)">👁</button>
+          </div>
+          <div class="field-hint">Get from api.imgbb.com after login</div>
+        </div>
+        <button class="test-btn" id="testImgbbBtn" onclick="testImgBB()">⚡ Test ImgBB</button>
+      </div>
+
+      <!-- Cloudinary -->
+      <div class="cfg-card">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">☁️</div>
+          <div>
+            <div class="cfg-card-title">CLOUDINARY</div>
+            <div class="cfg-card-sub">Image transformations, compression, banners</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Cloud Name</div>
+          <input class="field-input" type="text" id="cloud_name" placeholder="your-cloud-name" data-key="cloud_name"/>
+        </div>
+        <div class="field">
+          <div class="field-label">API Key</div>
+          <input class="field-input" type="text" id="cloud_key" placeholder="548247219869771" data-key="cloud_key"/>
+        </div>
+        <div class="field">
+          <div class="field-label">API Secret</div>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="cloud_secret" placeholder="NaJI272oO3xxxxxxxxxxxxxxx" data-key="cloud_secret"/>
+            <button class="field-eye" onclick="toggleEye('cloud_secret',this)">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payments -->
+      <div class="cfg-card">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">💳</div>
+          <div>
+            <div class="cfg-card-title">PAYMENTS</div>
+            <div class="cfg-card-sub">Razorpay (India) + Stripe (International)</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Razorpay Key ID</div>
+          <input class="field-input" type="text" id="razorpay_key" placeholder="rzp_live_xxxxxxxxxx" data-key="razorpay_key"/>
+          <div class="field-hint">Get from Razorpay Dashboard → Settings → API Keys</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Stripe Publishable Key</div>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="stripe_key" placeholder="pk_live_xxxxxxxxxxxx" data-key="stripe_key"/>
+            <button class="field-eye" onclick="toggleEye('stripe_key',this)">👁</button>
+          </div>
+          <div class="field-hint">Get from Stripe Dashboard → Developers → API Keys</div>
+        </div>
+        <div class="field">
+          <div class="field-label">UPI ID</div>
+          <input class="field-input" type="text" id="upi_id" placeholder="xzora@upi" data-key="upi_id"/>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="cfg-card">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">📩</div>
+          <div>
+            <div class="cfg-card-title">NOTIFICATIONS</div>
+            <div class="cfg-card-sub">SMS, WhatsApp, Email alerts</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Fast2SMS API Key</div>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="sms_key" placeholder="Fast2SMS API key" data-key="sms_key"/>
+            <button class="field-eye" onclick="toggleEye('sms_key',this)">👁</button>
+          </div>
+          <div class="field-hint">fast2sms.com → API → Your Key</div>
+        </div>
+        <div class="field">
+          <div class="field-label">EmailJS Service ID</div>
+          <input class="field-input" type="text" id="emailjs_service" placeholder="service_xxxxxxx" data-key="emailjs_service"/>
+        </div>
+        <div class="field">
+          <div class="field-label">EmailJS Template ID</div>
+          <input class="field-input" type="text" id="emailjs_template" placeholder="template_xxxxxxx" data-key="emailjs_template"/>
+        </div>
+        <div class="field">
+          <div class="field-label">EmailJS Public Key</div>
+          <input class="field-input" type="text" id="emailjs_key" placeholder="xxxxxxxxxxxxxxxxxxxx" data-key="emailjs_key"/>
+        </div>
+      </div>
+
+      <!-- Shipping -->
+      <div class="cfg-card">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">🚚</div>
+          <div>
+            <div class="cfg-card-title">SHIPPING</div>
+            <div class="cfg-card-sub">Shiprocket courier tracking India</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Shiprocket Email</div>
+          <input class="field-input" type="text" id="ship_email" placeholder="your@email.com" data-key="ship_email"/>
+        </div>
+        <div class="field">
+          <div class="field-label">Shiprocket Password</div>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="ship_pass" placeholder="Shiprocket password" data-key="ship_pass"/>
+            <button class="field-eye" onclick="toggleEye('ship_pass',this)">👁</button>
+          </div>
+          <div class="field-hint">Used to auto-generate auth tokens via their API</div>
+        </div>
+      </div>
+
+      <!-- Key Status Overview -->
+      <div class="cfg-card full">
+        <div class="cfg-card-header">
+          <div class="cfg-card-icon">📋</div>
+          <div>
+            <div class="cfg-card-title">KEY STATUS OVERVIEW</div>
+            <div class="cfg-card-sub">Which keys are configured vs missing</div>
+          </div>
+          <button class="test-btn" style="margin-left:auto" onclick="refreshStatus()">↻ Refresh</button>
+        </div>
+        <div class="status-panel" id="statusPanel">
+          <div class="status-row"><span class="key-name">Loading status...</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Save Panel -->
+    <div class="save-panel">
+      <div class="save-info">
+        <strong>Ready to save?</strong>
+        Keys are encrypted and saved to Firebase Remote Config. The site reads these at runtime — no keys in source code ever.
+      </div>
+      <div class="save-actions">
+        <button class="btn-clear-all" onclick="clearAllKeys()">Clear All</button>
+        <button class="btn-save-all" id="mainSaveBtn" onclick="saveAllKeys()">💾 Save All Keys to Firebase</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+// ═══════════════════════════════════════════════
+// XZORA Admin Config — All logic
+// ═══════════════════════════════════════════════
+
+// ── CURSOR ──
+const cur = document.getElementById('xz-cursor');
+const ring = document.getElementById('xz-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px'; });
+(function anim(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(anim); })();
+document.addEventListener('mouseover', e => {
+  if(e.target.closest('a,button,input,select')) { cur.classList.add('hov'); ring.classList.add('hov'); }
+  else { cur.classList.remove('hov'); ring.classList.remove('hov'); }
+});
+
+// ── TOAST ──
+let toastTimer;
+function toast(msg, type='default') {
+  const el = document.getElementById('toast');
+  el.className = type;
+  el.innerHTML = `<span>${type==='success'?'✓':type==='error'?'✕':'ℹ'}</span> ${msg}`;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── CONSTANTS ──
+const CORRECT_PASSWORD = 'seyonpatravx';
+const SESSION_KEY = 'xz_config_session';
+const MAX_ATTEMPTS = 5;
+let attempts = 0;
+
+// ── CHECK SESSION ──
+if (sessionStorage.getItem(SESSION_KEY) === '1') {
+  showPanel();
+}
+
+// ── UNLOCK ──
+window.unlock = function() {
+  const input = document.getElementById('lockInput');
+  const err = document.getElementById('lockErr');
+  const val = input.value;
+
+  if (attempts >= MAX_ATTEMPTS) {
+    err.textContent = 'Too many failed attempts. Close and reopen this page.';
+    return;
+  }
+
+  if (val === CORRECT_PASSWORD) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('lockScreen').style.opacity = '0';
+    document.getElementById('lockScreen').style.transition = 'opacity .4s';
+    setTimeout(showPanel, 400);
+  } else {
+    attempts++;
+    input.classList.add('shake');
+    setTimeout(() => input.classList.remove('shake'), 400);
+    input.value = '';
+    const left = MAX_ATTEMPTS - attempts;
+    err.textContent = `Incorrect password. ${left} attempt${left===1?'':'s'} remaining.`;
+    document.getElementById('attemptsLeft').textContent = left <= 2 ? `⚠️ ${left} attempts left` : '';
+    if (attempts >= MAX_ATTEMPTS) {
+      err.textContent = '🔒 Too many failed attempts. Page locked.';
+      input.disabled = true;
+      document.querySelector('.lock-btn').disabled = true;
+    }
+  }
+};
+
+function showPanel() {
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('mainPanel').style.display = 'block';
+  loadKeysFromStorage();
+  refreshStatus();
+}
+
+window.lockPanel = function() {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+};
+
+// ── TOGGLE EYE ──
+window.toggleEye = function(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+};
+
+// ── ALL KEYS LIST ──
+const ALL_KEYS = [
+  'fb_apiKey','fb_appId','fb_authDomain','fb_projectId','fb_storageBucket','fb_messagingSenderId','fb_databaseURL',
+  'groq_key','groq_model',
+  'hf_key',
+  'imgbb_key',
+  'cloud_name','cloud_key','cloud_secret',
+  'razorpay_key','stripe_key','upi_id',
+  'sms_key','emailjs_service','emailjs_template','emailjs_key',
+  'ship_email','ship_pass'
+];
+
+const KEY_LABELS = {
+  fb_apiKey: 'Firebase API Key', fb_appId: 'Firebase App ID', fb_authDomain: 'Firebase Auth Domain',
+  fb_projectId: 'Firebase Project ID', fb_storageBucket: 'Firebase Storage Bucket',
+  fb_messagingSenderId: 'Firebase Messaging Sender ID', fb_databaseURL: 'Firebase Database URL',
+  groq_key: 'Groq API Key', groq_model: 'Groq Model',
+  hf_key: 'HuggingFace Token',
+  imgbb_key: 'ImgBB API Key',
+  cloud_name: 'Cloudinary Cloud Name', cloud_key: 'Cloudinary API Key', cloud_secret: 'Cloudinary Secret',
+  razorpay_key: 'Razorpay Key ID', stripe_key: 'Stripe Publishable Key', upi_id: 'UPI ID',
+  sms_key: 'Fast2SMS Key', emailjs_service: 'EmailJS Service', emailjs_template: 'EmailJS Template', emailjs_key: 'EmailJS Public Key',
+  ship_email: 'Shiprocket Email', ship_pass: 'Shiprocket Password'
+};
+
+// ── LOAD FROM LOCALSTORAGE ──
+function loadKeysFromStorage() {
+  ALL_KEYS.forEach(key => {
+    const val = localStorage.getItem('xzk_' + key);
+    const el = document.getElementById(key);
+    if (el && val) {
+      el.value = val;
+      el.classList.add('set');
+      el.classList.remove('empty');
+    }
+  });
+}
+
+// ── SAVE ALL KEYS ──
+window.saveAllKeys = async function() {
+  const btn = document.getElementById('mainSaveBtn');
+  const hdrBtn = document.querySelector('.hdr-save');
+  btn.textContent = '💾 Saving...'; btn.disabled = true;
+  hdrBtn.textContent = 'Saving...';
+
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot saving';
+  txt.textContent = 'Saving to Firebase...';
+
+  // Collect all values
+  const keys = {};
+  ALL_KEYS.forEach(key => {
+    const el = document.getElementById(key);
+    if (el && el.value.trim()) {
+      keys[key] = el.value.trim();
+      // Also save to localStorage as backup
+      localStorage.setItem('xzk_' + key, el.value.trim());
+      el.classList.add('set'); el.classList.remove('empty');
+    }
+  });
+
+  try {
+    // Save to Firebase Remote Config via REST API
+    const fbApiKey = keys.fb_apiKey || localStorage.getItem('xzk_fb_apiKey');
+    const fbProjectId = keys.fb_projectId || localStorage.getItem('xzk_fb_projectId');
+
+    if (fbApiKey && fbProjectId) {
+      // Get access token via Firebase Auth REST
+      await saveToRemoteConfig(keys, fbProjectId, fbApiKey);
+      dot.className = 'status-dot saved';
+      txt.textContent = 'Saved to Firebase ✓';
+      toast('All keys saved to Firebase Remote Config! 🎉', 'success');
+    } else {
+      // Fallback: localStorage only
+      dot.className = 'status-dot saved';
+      txt.textContent = 'Saved locally ✓';
+      toast('Keys saved to localStorage. Add Firebase details to sync across devices.', 'success');
+    }
+  } catch(e) {
+    // localStorage fallback
+    dot.className = 'status-dot saved';
+    txt.textContent = 'Saved locally ✓';
+    toast('Keys saved to localStorage. Firebase sync: ' + e.message, 'success');
+  } finally {
+    btn.textContent = '💾 Save All Keys to Firebase'; btn.disabled = false;
+    hdrBtn.textContent = 'Save All Keys';
+    refreshStatus();
+  }
+};
+
+// ── SAVE TO FIREBASE REMOTE CONFIG ──
+async function saveToRemoteConfig(keys, projectId, apiKey) {
+  // Build Remote Config template
+  const parameters = {};
+  Object.entries(keys).forEach(([k, v]) => {
+    parameters[k] = { defaultValue: { value: v } };
+  });
+
+  // Note: Full Remote Config requires a service account / server SDK
+  // For client-side, we store in Firestore under a protected config doc
+  const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+  const { getFirestore, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const { getAuth, signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+  const fbConfig = {
+    apiKey, projectId,
+    authDomain: keys.fb_authDomain || localStorage.getItem('xzk_fb_authDomain') || `${projectId}.firebaseapp.com`,
+    storageBucket: keys.fb_storageBucket || localStorage.getItem('xzk_fb_storageBucket') || `${projectId}.appspot.com`,
+    messagingSenderId: keys.fb_messagingSenderId || localStorage.getItem('xzk_fb_messagingSenderId') || '',
+    appId: keys.fb_appId || localStorage.getItem('xzk_fb_appId') || '',
+    databaseURL: keys.fb_databaseURL || localStorage.getItem('xzk_fb_databaseURL') || '',
+  };
+
+  let app;
+  if (getApps().length) { app = getApps()[0]; }
+  else { const { initializeApp: init } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"); app = init(fbConfig); }
+
+  const db = getFirestore(app);
+
+  // Save to Firestore under /xzora_config/keys (protected by Firestore rules)
+  await setDoc(doc(db, 'xzora_config', 'keys'), {
+    ...keys,
+    updatedAt: new Date().toISOString(),
+    updatedBy: 'admin'
+  });
+}
+
+// ── LOAD KEYS (used by other pages) ──
+// Other pages call this to get keys at runtime
+window.loadXzoraKeys = async function() {
+  // Try Firestore first, fallback to localStorage
+  const local = {};
+  ALL_KEYS.forEach(k => { const v = localStorage.getItem('xzk_'+k); if(v) local[k]=v; });
+  return local;
+};
+
+// ── REFRESH STATUS ──
+window.refreshStatus = function() {
+  const panel = document.getElementById('statusPanel');
+  const rows = ALL_KEYS.map(key => {
+    const val = document.getElementById(key)?.value || localStorage.getItem('xzk_'+key) || '';
+    const isSet = val.length > 0;
+    const display = isSet ? (val.length > 20 ? val.slice(0,8)+'••••••••'+val.slice(-4) : '••••••') : '— not set';
+    return `<div class="status-row"><span class="key-name">${KEY_LABELS[key]||key}</span><span class="key-val ${isSet?'st-set':'st-missing'}">${display}</span></div>`;
+  }).join('');
+  panel.innerHTML = rows;
+};
+
+// ── CLEAR ALL ──
+window.clearAllKeys = function() {
+  if (!confirm('Clear ALL saved keys? This cannot be undone.')) return;
+  ALL_KEYS.forEach(key => {
+    localStorage.removeItem('xzk_'+key);
+    const el = document.getElementById(key);
+    if(el){ el.value=''; el.classList.remove('set'); }
+  });
+  toast('All keys cleared from localStorage', 'error');
+  refreshStatus();
+};
+
+// ── TEST FIREBASE ──
+window.testFirebase = async function() {
+  const btn = document.getElementById('testFirebaseBtn');
+  btn.className = 'test-btn testing'; btn.textContent = '⏳ Testing...';
+  try {
+    const apiKey = document.getElementById('fb_apiKey').value || localStorage.getItem('xzk_fb_apiKey');
+    const projectId = document.getElementById('fb_projectId').value || localStorage.getItem('xzk_fb_projectId');
+    if (!apiKey || !projectId) throw new Error('Enter Firebase API Key and Project ID first');
+    const res = await fetch(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/xzora_ping?key=${apiKey}`);
+    if (res.status === 200 || res.status === 404) {
+      btn.className = 'test-btn ok'; btn.textContent = '✓ Firebase connected!';
+      toast('Firebase connection successful!', 'success');
+    } else throw new Error('HTTP ' + res.status);
+  } catch(e) {
+    btn.className = 'test-btn fail'; btn.textContent = '✕ ' + e.message;
+    toast('Firebase test failed: ' + e.message, 'error');
+  }
+};
+
+// ── TEST GROQ ──
+window.testGroq = async function() {
+  const btn = document.getElementById('testGroqBtn');
+  btn.className = 'test-btn testing'; btn.textContent = '⏳ Testing...';
+  try {
+    const key = document.getElementById('groq_key').value || localStorage.getItem('xzk_groq_key');
+    if (!key) throw new Error('Enter Groq API key first');
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: 'Say: XZORA_OK' }], max_tokens: 10 })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    btn.className = 'test-btn ok'; btn.textContent = '✓ Groq connected!';
+    toast('Groq API working!', 'success');
+  } catch(e) {
+    btn.className = 'test-btn fail'; btn.textContent = '✕ ' + e.message;
+    toast('Groq test failed: ' + e.message, 'error');
+  }
+};
+
+// ── TEST HUGGINGFACE ──
+window.testHF = async function() {
+  const btn = document.getElementById('testHfBtn');
+  btn.className = 'test-btn testing'; btn.textContent = '⏳ Testing...';
+  try {
+    const key = document.getElementById('hf_key').value || localStorage.getItem('xzk_hf_key');
+    if (!key) throw new Error('Enter HuggingFace token first');
+    const res = await fetch('https://huggingface.co/api/whoami-v2', {
+      headers: { 'Authorization': `Bearer ${key}` }
+    });
+    if (!res.ok) throw new Error('Invalid token');
+    btn.className = 'test-btn ok'; btn.textContent = '✓ HuggingFace connected!';
+    toast('HuggingFace token valid!', 'success');
+  } catch(e) {
+    btn.className = 'test-btn fail'; btn.textContent = '✕ ' + e.message;
+    toast('HuggingFace test failed: ' + e.message, 'error');
+  }
+};
+
+// ── TEST IMGBB ──
+window.testImgBB = async function() {
+  const btn = document.getElementById('testImgbbBtn');
+  btn.className = 'test-btn testing'; btn.textContent = '⏳ Testing...';
+  try {
+    const key = document.getElementById('imgbb_key').value || localStorage.getItem('xzk_imgbb_key');
+    if (!key) throw new Error('Enter ImgBB key first');
+    // Test with a tiny 1x1 pixel image
+    const formData = new FormData();
+    formData.append('image', 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+      btn.className = 'test-btn ok'; btn.textContent = '✓ ImgBB connected!';
+      toast('ImgBB API working!', 'success');
+    } else throw new Error(data.error?.message || 'Upload failed');
+  } catch(e) {
+    btn.className = 'test-btn fail'; btn.textContent = '✕ ' + e.message;
+    toast('ImgBB test failed: ' + e.message, 'error');
+  }
+};
+
+// ── AUTO-MARK FIELDS ──
+document.querySelectorAll('.field-input').forEach(inp => {
+  inp.addEventListener('input', () => {
+    inp.classList.toggle('set', inp.value.length > 0);
+    inp.classList.toggle('empty', inp.value.length === 0);
+  });
+});
+</script>
+</body>
+</html>

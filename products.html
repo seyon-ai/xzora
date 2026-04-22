@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — Products</title>
+<link rel="stylesheet" href="main.css"/>
+<style>
+.breadcrumb{padding:calc(var(--nav-h) + 16px) 60px 0;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .2s}.breadcrumb a:hover{color:var(--accent)}
+.breadcrumb .cur{color:var(--text)}
+.page-layout{display:grid;grid-template-columns:250px 1fr;gap:0;padding:16px 60px 60px;min-height:calc(100vh - var(--nav-h))}
+.sidebar{padding-right:24px;border-right:1px solid var(--border);position:sticky;top:calc(var(--nav-h)+16px);height:fit-content;max-height:calc(100vh - 100px);overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:0}
+.sb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.sb-title{font-family:var(--font-display);font-size:20px;letter-spacing:2px;color:var(--white)}
+.clear-all{font-size:11px;color:var(--accent);background:none;border:none;cursor:none;letter-spacing:.5px;text-transform:uppercase}
+.filter-grp{margin-bottom:24px}
+.f-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;cursor:none;user-select:none}
+.f-opts{display:flex;flex-direction:column;gap:2px}
+.f-opt{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;cursor:none;transition:background .2s;font-size:12px;color:var(--muted)}
+.f-opt:hover{background:var(--surface);color:var(--text)}
+.f-opt.on{background:rgba(232,213,163,.08);color:var(--accent)}
+.f-chk{width:15px;height:15px;border-radius:3px;border:1px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:9px}
+.f-opt.on .f-chk{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.f-cnt{margin-left:auto;font-size:10px;color:var(--muted2)}
+.brand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.b-chip{padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--muted);cursor:none;transition:all .2s}
+.b-chip:hover{border-color:var(--border2);color:var(--text)}
+.b-chip.on{border-color:var(--accent);color:var(--accent);background:rgba(232,213,163,.06)}
+.star-opts{display:flex;flex-direction:column;gap:3px}
+.star-opt{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:7px;cursor:none;transition:background .2s;font-size:12px;color:var(--muted)}
+.star-opt:hover{background:var(--surface);color:var(--text)}
+.star-opt.on{background:rgba(232,213,163,.08);color:var(--accent)}
+.toggle-row{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:7px;cursor:none;font-size:12px;color:var(--muted);transition:background .2s}
+.toggle-row:hover{background:var(--surface);color:var(--text)}
+.tog{width:30px;height:16px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);position:relative;margin-left:auto;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--accent);border-color:var(--accent)}
+.tog-knob{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--muted);top:2px;left:2px;transition:all .2s}
+.tog.on .tog-knob{left:17px;background:var(--bg)}
+.main-area{padding-left:24px}
+.active-filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;min-height:28px}
+.af-tag{display:flex;align-items:center;gap:5px;padding:4px 10px 4px 12px;background:rgba(232,213,163,.08);border:1px solid rgba(232,213,163,.2);border-radius:100px;font-size:11px;color:var(--accent);cursor:none}
+.af-x{font-size:12px;color:var(--muted);transition:color .2s}
+.af-tag:hover .af-x{color:var(--red)}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.result-info{display:flex;flex-direction:column;gap:3px}
+.result-title{font-family:var(--font-display);font-size:34px;letter-spacing:2px;color:var(--white)}
+.result-count{font-size:12px;color:var(--muted)}
+.result-count span{color:var(--accent)}
+.tb-right{display:flex;align-items:center;gap:10px}
+.sort-sel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--font-body);font-size:12px;outline:none;cursor:none}
+.sort-sel:focus{border-color:var(--accent)}
+.view-btns{display:flex;gap:4px}
+.vb{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:none;transition:all .2s;font-size:13px}
+.vb.on,.vb:hover{border-color:var(--accent);background:rgba(232,213,163,.08)}
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.products-grid.list{grid-template-columns:1fr}
+.products-grid.list .product-card{display:flex;flex-direction:row}
+.products-grid.list .product-img{width:160px;flex-shrink:0;aspect-ratio:1}
+.products-grid.list .product-info{flex:1;padding:20px;display:flex;flex-direction:column;justify-content:space-between}
+.products-grid.list .product-hover-actions{position:static;transform:none!important;background:none;padding:0;margin-top:12px;display:flex;gap:8px}
+.pagination{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:36px;padding-top:28px;border-top:1px solid var(--border)}
+.pg-btn{width:34px;height:34px;border-radius:7px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);cursor:none;transition:all .2s}
+.pg-btn:hover,.pg-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(232,213,163,.06)}
+.pg-btn.on{font-weight:500}
+.no-products{padding:60px;text-align:center;color:var(--muted)}
+.loading-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.skel{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--radius)}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@media(max-width:1024px){.page-layout{grid-template-columns:1fr;padding:12px 20px 40px}.sidebar{display:none}.products-grid{grid-template-columns:repeat(2,1fr)}.breadcrumb{padding:calc(var(--nav-h)+12px) 20px 0}}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<nav class="xz-nav">
+  <a href="index.html" class="logo">XZ<span>O</span>RA</a>
+  <ul class="nav-links">
+    <li><a href="products.html?cat=electronics">Electronics</a></li>
+    <li><a href="products.html?cat=fashion">Fashion</a></li>
+    <li><a href="products.html?cat=home">Home</a></li>
+    <li><a href="products.html?cat=sports">Sports</a></li>
+    <li><a href="products.html?cat=beauty">Beauty</a></li>
+    <li><a href="products.html?deal=flash">⚡ Deals</a></li>
+  </ul>
+  <div class="nav-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;stroke:var(--muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="searchInput" placeholder="Search products..." autocomplete="off"/></div>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge cart-count" style="display:none">0</span></a>
+    <a href="auth.html" class="nav-btn" id="navAuthBtn">Sign In</a>
+  </div>
+</nav>
+<div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span class="cur" id="breadCat">All Products</span></div>
+<div class="page-layout">
+  <aside class="sidebar">
+    <div class="sb-header"><span class="sb-title">FILTERS</span><button class="clear-all" onclick="clearAllFilters()">Clear All</button></div>
+    <div class="filter-grp">
+      <div class="f-label">Category</div>
+      <div class="f-opts" id="catFilters">
+        <div class="f-opt on" data-cat="all" onclick="setCat(this)"><div class="f-chk">✓</div><span>All Products</span></div>
+        <div class="f-opt" data-cat="electronics" onclick="setCat(this)"><div class="f-chk"></div><span>Electronics</span><span class="f-cnt">3.2K</span></div>
+        <div class="f-opt" data-cat="fashion" onclick="setCat(this)"><div class="f-chk"></div><span>Fashion</span><span class="f-cnt">4.1K</span></div>
+        <div class="f-opt" data-cat="home" onclick="setCat(this)"><div class="f-chk"></div><span>Home & Living</span><span class="f-cnt">2.8K</span></div>
+        <div class="f-opt" data-cat="beauty" onclick="setCat(this)"><div class="f-chk"></div><span>Beauty</span><span class="f-cnt">1.9K</span></div>
+        <div class="f-opt" data-cat="sports" onclick="setCat(this)"><div class="f-chk"></div><span>Sports</span><span class="f-cnt">1.4K</span></div>
+        <div class="f-opt" data-cat="gaming" onclick="setCat(this)"><div class="f-chk"></div><span>Gaming</span><span class="f-cnt">980</span></div>
+      </div>
+    </div>
+    <div class="filter-grp">
+      <div class="f-label">Customer Rating</div>
+      <div class="star-opts">
+        <div class="star-opt on" onclick="setRating(5,this)"><span style="color:var(--accent)">★★★★★</span> 5 stars</div>
+        <div class="star-opt" onclick="setRating(4,this)"><span style="color:var(--accent)">★★★★☆</span> 4+ stars</div>
+        <div class="star-opt" onclick="setRating(3,this)"><span style="color:var(--accent)">★★★☆☆</span> 3+ stars</div>
+        <div class="star-opt" onclick="setRating(0,this)"><span style="color:var(--muted2)">☆☆☆☆☆</span> All ratings</div>
+      </div>
+    </div>
+    <div class="filter-grp">
+      <div class="f-label">Brand</div>
+      <div class="brand-chips" id="brandChips">
+        <span class="b-chip" onclick="toggleBrand(this)">Apple</span>
+        <span class="b-chip" onclick="toggleBrand(this)">Samsung</span>
+        <span class="b-chip" onclick="toggleBrand(this)">Sony</span>
+        <span class="b-chip" onclick="toggleBrand(this)">Nike</span>
+        <span class="b-chip" onclick="toggleBrand(this)">Adidas</span>
+        <span class="b-chip" onclick="toggleBrand(this)">OnePlus</span>
+        <span class="b-chip" onclick="toggleBrand(this)">Bose</span>
+        <span class="b-chip" onclick="toggleBrand(this)">Xiaomi</span>
+        <span class="b-chip" onclick="toggleBrand(this)">Dell</span>
+        <span class="b-chip" onclick="toggleBrand(this)">HP</span>
+      </div>
+    </div>
+    <div class="filter-grp">
+      <div class="f-label">Delivery</div>
+      <div class="toggle-row" onclick="toggleDel(this)"><span>Free Delivery</span><div class="tog on"><div class="tog-knob"></div></div></div>
+      <div class="toggle-row" onclick="toggleDel(this)"><span>Next Day Delivery</span><div class="tog"><div class="tog-knob"></div></div></div>
+      <div class="toggle-row" onclick="toggleDel(this)"><span>COD Available</span><div class="tog"><div class="tog-knob"></div></div></div>
+    </div>
+    <div class="filter-grp">
+      <div class="f-label">Discount</div>
+      <div class="f-opts">
+        <div class="f-opt" onclick="toggleFilter(this)"><div class="f-chk"></div><span>10% or more</span></div>
+        <div class="f-opt on" onclick="toggleFilter(this)"><div class="f-chk">✓</div><span>25% or more</span></div>
+        <div class="f-opt" onclick="toggleFilter(this)"><div class="f-chk"></div><span>50% or more</span></div>
+      </div>
+    </div>
+  </aside>
+  <main class="main-area">
+    <div class="active-filters" id="activeFilters"></div>
+    <div class="toolbar">
+      <div class="result-info">
+        <h1 class="result-title" id="pageTitle">ALL PRODUCTS</h1>
+        <p class="result-count">Showing <span id="resCount">0–12</span> results</p>
+      </div>
+      <div class="tb-right">
+        <select class="sort-sel" id="sortSel" onchange="loadProducts()">
+          <option value="createdAt">Newest First</option>
+          <option value="price">Price: Low to High</option>
+          <option value="rating">Best Rating</option>
+          <option value="sales">Most Popular</option>
+        </select>
+        <div class="view-btns">
+          <div class="vb on" id="gridVB" onclick="setView('grid')" title="Grid">⊞</div>
+          <div class="vb" id="listVB" onclick="setView('list')" title="List">☰</div>
+        </div>
+      </div>
+    </div>
+    <div id="productsContainer">
+      <div class="loading-grid">
+        ${Array(6).fill('<div class="skel" style="height:280px"></div>').join('')}
+      </div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </main>
+</div>
+<script type="module">
+import { initCursor, toast, updateCartBadge } from './utils.js';
+import { onAuth } from './auth.js';
+import { getProducts, searchProducts } from './products.js';
+import { listenCart, addToCart } from './cart.js';
+initCursor();
+onAuth(user => { if(user){ document.getElementById('navAuthBtn').textContent=user.displayName?.split(' ')[0]||'Account'; document.getElementById('navAuthBtn').href='profile.html'; } });
+listenCart(items=>updateCartBadge(items.reduce((s,i)=>s+i.qty,0)));
+
+const params = new URLSearchParams(location.search);
+let currentCat = params.get('cat')||'all';
+let currentSort = 'createdAt';
+let viewMode = 'grid';
+let lastDoc = null;
+let currentPage = 1;
+const EMOJI = {electronics:'📱',fashion:'👗',home:'🏠',beauty:'💄',sports:'⚽',gaming:'🎮',books:'📚',default:'📦'};
+
+// Set initial category
+if(currentCat!=='all'){
+  document.querySelectorAll('.f-opt').forEach(o=>{ o.classList.remove('on'); o.querySelector('.f-chk').textContent=''; });
+  const match = document.querySelector(`.f-opt[data-cat="${currentCat}"]`);
+  if(match){ match.classList.add('on'); match.querySelector('.f-chk').textContent='✓'; }
+  document.getElementById('breadCat').textContent = currentCat.charAt(0).toUpperCase()+currentCat.slice(1);
+  document.getElementById('pageTitle').textContent = currentCat.toUpperCase();
+}
+
+// Search from URL
+const q = params.get('q');
+if(q){ document.getElementById('searchInput').value=q; document.getElementById('pageTitle').textContent='SEARCH: '+q.toUpperCase(); }
+
+window.setCat = function(el) {
+  document.querySelectorAll('.f-opt').forEach(o=>{ o.classList.remove('on'); o.querySelector('.f-chk').textContent=''; });
+  el.classList.add('on'); el.querySelector('.f-chk').textContent='✓';
+  currentCat = el.dataset.cat; currentPage=1; loadProducts();
+};
+window.toggleFilter = function(el){ el.classList.toggle('on'); el.querySelector('.f-chk').textContent=el.classList.contains('on')?'✓':''; };
+window.toggleBrand = function(el){ el.classList.toggle('on'); renderActiveTags(); };
+window.setRating = function(r,el){ document.querySelectorAll('.star-opt').forEach(s=>s.classList.remove('on')); el.classList.add('on'); };
+window.toggleDel = function(el){ el.querySelector('.tog').classList.toggle('on'); };
+window.clearAllFilters = function(){ document.querySelectorAll('.f-opt.on').forEach(o=>{o.classList.remove('on');o.querySelector('.f-chk').textContent='';}); document.querySelectorAll('.b-chip.on').forEach(c=>c.classList.remove('on')); document.querySelectorAll('.star-opt.on').forEach(s=>s.classList.remove('on')); document.getElementById('activeFilters').innerHTML=''; loadProducts(); };
+window.setView = function(v){ viewMode=v; document.getElementById('gridVB').classList.toggle('on',v==='grid'); document.getElementById('listVB').classList.toggle('on',v==='list'); const c=document.getElementById('productsContainer').querySelector('div'); if(c){c.classList.toggle('list',v==='list');} };
+
+function renderActiveTags() {
+  const active = [...document.querySelectorAll('.b-chip.on')].map(c=>c.textContent);
+  const el = document.getElementById('activeFilters');
+  el.innerHTML = active.map(b=>`<div class="af-tag" onclick="removeBrand('${b}',this)">${b} <span class="af-x">×</span></div>`).join('');
+}
+window.removeBrand = function(brand,tag){ const chip=[...document.querySelectorAll('.b-chip')].find(c=>c.textContent===brand); if(chip)chip.classList.remove('on'); tag.remove(); };
+
+async function loadProducts() {
+  const container = document.getElementById('productsContainer');
+  container.innerHTML = `<div class="loading-grid">${Array(6).fill('<div class="skel" style="height:280px"></div>').join('')}</div>`;
+  try {
+    let items=[];
+    const searchQ = document.getElementById('searchInput').value.trim();
+    if(searchQ){ items = await searchProducts(searchQ); }
+    else { const res = await getProducts({category:currentCat==='all'?null:currentCat, sortBy:document.getElementById('sortSel').value}); items=res.items; }
+    renderProducts(items, container);
+    document.getElementById('resCount').textContent = `1–${items.length}`;
+  } catch(e) {
+    container.innerHTML = `<div class="no-products"><p style="font-size:14px">No products found. Add products as a seller first!</p><a href="index.html" class="btn btn-primary btn-sm" style="margin-top:16px;display:inline-flex">Back to Home</a></div>`;
+  }
+}
+
+function renderProducts(items, container) {
+  if(!items.length){ container.innerHTML=`<div class="no-products"><div style="font-size:48px;margin-bottom:16px">🔍</div><p style="font-size:14px;color:var(--muted)">No products found</p><a href="products.html" class="btn btn-primary btn-sm" style="display:inline-flex;margin-top:16px">Clear Filters</a></div>`; return; }
+  const grid = document.createElement('div');
+  grid.className = `products-grid ${viewMode==='list'?'list':''}`;
+  grid.innerHTML = items.map(p=>`
+    <div class="product-card" onclick="window.location='product-detail.html?id=${p.id}'">
+      ${p.discount?`<span class="badge badge-sale">-${p.discount}%</span>`:''}
+      ${p.isNew?`<span class="badge badge-new">New</span>`:''}
+      <div class="product-img">
+        ${p.imageUrl?`<img src="${p.imageUrl}" alt="${p.name}" loading="lazy"/>`:(EMOJI[p.category]||EMOJI.default)}
+        <div class="wish-btn" onclick="event.stopPropagation();this.classList.toggle('active');this.textContent=this.classList.contains('active')?'♥':'♡'">♡</div>
+        <div class="product-hover-actions">
+          <button class="btn btn-primary" style="flex:1;padding:9px;font-size:10px" onclick="event.stopPropagation();doAddToCart(this,'${p.id}',${JSON.stringify(p).replace(/'/g,"\\'")})" >Add to Cart</button>
+          <button class="btn btn-ghost" style="padding:9px 12px;font-size:11px" onclick="event.stopPropagation();window.location='product-detail.html?id=${p.id}'">View</button>
+        </div>
+      </div>
+      <div class="product-info">
+        <p class="product-brand">${p.brand||''}</p>
+        <p class="product-name">${p.name}</p>
+        <div class="product-rating"><span class="stars">${'★'.repeat(Math.round(p.rating||0))}${'☆'.repeat(5-Math.round(p.rating||0))}</span> ${p.rating||'New'} ${p.reviewCount?`(${p.reviewCount})`:''}
+        </div>
+        <div class="product-price-row">
+          <div><span class="price">₹${Number(p.price).toLocaleString('en-IN')}</span>${p.originalPrice?`<span class="price-old">₹${Number(p.originalPrice).toLocaleString('en-IN')}</span>`:''}</div>
+          <span class="free-delivery">Free delivery</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  container.innerHTML=''; container.appendChild(grid);
+}
+
+window.doAddToCart = async function(btn,id,p) {
+  btn.textContent='Adding...'; btn.disabled=true;
+  try{ await addToCart(p); btn.textContent='✓ Added'; btn.style.background='var(--green)'; setTimeout(()=>{btn.textContent='Add to Cart';btn.style.background='';btn.disabled=false;},1600); }
+  catch(e){ btn.textContent='Add to Cart'; btn.disabled=false; toast(e.message,'error'); }
+};
+
+// Search
+document.getElementById('searchInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ currentPage=1; loadProducts(); } });
+
+loadProducts();
+</script>
+</body>
+</html>

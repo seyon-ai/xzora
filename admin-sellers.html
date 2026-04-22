@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>XZORA Admin — Sellers</title><link rel="stylesheet" href="admin.css"/></head><body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar"><div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Admin Panel</div></div><div class="sb-user"><div class="sb-avatar" id="sbAvatar" style="background:var(--accent)">A</div><div><p class="sb-uname" id="sbName">Admin</p><p class="sb-uemail" id="sbEmail"></p></div></div><nav class="sb-nav"><a href="admin-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a><a href="admin-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>All Orders</a><a href="admin-sellers.html" class="sb-item on"><span class="sb-icon">🏪</span>Sellers</a><a href="admin-users.html" class="sb-item"><span class="sb-icon">👥</span>Users</a><a href="admin-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a><a href="admin-commission.html" class="sb-item"><span class="sb-icon">💰</span>Commission</a><a href="admin-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Control</a></nav><div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div></aside>
+<div class="main-wrap"><div class="top-bar"><span class="page-title">SELLERS</span></div>
+<div class="content"><div class="card"><table><thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Revenue</th><th>Status</th><th>Action</th></tr></thead><tbody id="tbl"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:32px">Loading...</td></tr></tbody></table></div></div></div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireAdmin, logout } from './auth.js';
+import { getAllSellers, updateSellerStatus } from './admin.js';
+initCursor();
+requireAdmin().then(async user=>{
+  document.getElementById('sbAvatar').textContent=(user.displayName||'A').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Admin';
+  document.getElementById('sbEmail').textContent=user.email||'';
+  try{
+    const items=await getAllSellers();
+    document.getElementById('tbl').innerHTML=items.length?items.map(s=>`<tr><td>${s.displayName||'Seller'}</td><td>${s.email||'—'}</td><td>${s.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'—'}</td><td>₹${(s.revenue||0).toLocaleString('en-IN')}</td><td><span class="status-pill sp-${s.status==='active'?'active':'inactive'}">${s.status||'active'}</span></td><td><button class="tb-btn tb-ghost" style="padding:5px 10px;font-size:11px" onclick="toggleSeller('${s.id}','${s.status||'active'}')">${s.status==='suspended'?'Activate':'Suspend'}</button></td></tr>`).join(''):'<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">No sellers yet</td></tr>';
+  }catch(e){document.getElementById('tbl').innerHTML=`<tr><td colspan="6" style="color:var(--red);text-align:center">${e.message}</td></tr>`;}
+});
+document.getElementById('logoutBtn').onclick=()=>logout();
+window.toggleSeller=async(uid,status)=>{try{await updateSellerStatus(uid,status==='active'?'suspended':'active');toast('Updated','success');location.reload();}catch(e){toast(e.message,'error');}};
+</script></body></html>

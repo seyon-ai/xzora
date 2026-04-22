@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA Seller — Dashboard</title>
+<link rel="stylesheet" href="seller.css"/>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar">
+  <div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Seller Portal</div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">S</div><div><p class="sb-uname" id="sbName">Seller</p><p class="sb-uemail" id="sbEmail">loading...</p></div></div>
+  <nav class="sb-nav">
+    <a href="seller-dashboard.html" class="sb-item on"><span class="sb-icon">🏠</span>Dashboard</a>
+    <a href="seller-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a>
+    <a href="seller-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>Orders<span class="sb-badge" id="pendingCount">0</span></a>
+    <a href="seller-analytics.html" class="sb-item"><span class="sb-icon">📊</span>Analytics</a>
+    <a href="seller-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Tools</a>
+    <a href="seller-help.html" class="sb-item"><span class="sb-icon">❓</span>Help</a>
+  </nav>
+  <div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div>
+</aside>
+<div class="main-wrap">
+  <div class="top-bar"><span class="page-title">DASHBOARD</span><div class="top-actions"><div class="ai-badge"><span class="pulse-dot"></span>AI Active</div><a href="seller-products.html" class="tb-btn tb-primary">+ Add Product</a></div></div>
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card"><div class="sc-label">Total Revenue</div><div class="sc-value" id="statRev">₹0</div><div class="sc-change sc-up" id="statRevChange">↑ This month</div></div>
+      <div class="stat-card"><div class="sc-label">Total Orders</div><div class="sc-value" id="statOrd">0</div><div class="sc-change sc-up">↑ All time</div></div>
+      <div class="stat-card"><div class="sc-label">Commission Paid</div><div class="sc-value" id="statComm">₹0</div><div class="sc-change sc-down">5% rate</div></div>
+      <div class="stat-card"><div class="sc-label">Active Products</div><div class="sc-value" id="statProd">0</div><div class="sc-change">Listed</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Recent Orders <span onclick="window.location='seller-orders.html'">View All →</span></div>
+        <table><thead><tr><th>Order ID</th><th>Item</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody id="recentOrdersTbl"><tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">No orders yet</td></tr></tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-title">AI Performance Message <span onclick="loadAiMsg()">Refresh ↻</span></div>
+        <div id="aiMsg" style="font-size:13px;color:var(--muted);line-height:1.7;padding:8px 0">Loading AI insights...</div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+          <div class="card-title" style="font-size:16px;margin-bottom:12px">Quick Actions</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="seller-products.html" class="tb-btn tb-primary" style="font-size:11px;padding:7px 14px">+ Add Product</a>
+            <a href="seller-orders.html" class="tb-btn tb-ghost" style="font-size:11px;padding:7px 14px">View Orders</a>
+            <a href="seller-ai.html" class="tb-btn tb-ghost" style="font-size:11px;padding:7px 14px">AI Tools</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top Products <span onclick="window.location='seller-products.html'">Manage →</span></div>
+      <table><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Sales</th></tr></thead>
+      <tbody id="topProductsTbl"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">No products yet. <a href="seller-products.html" style="color:var(--accent)">Add your first product →</a></td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireSeller, logout } from './auth.js';
+import { getSellerProducts } from './products.js';
+import { getSellerOrders, getSellerStats } from './seller.js';
+import { generateSellerMessage } from './ai.js';
+initCursor();
+let seller=null;
+
+requireSeller().then(async user=>{
+  seller=user;
+  document.getElementById('sbAvatar').textContent=(user.displayName||user.email||'S').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Seller';
+  document.getElementById('sbEmail').textContent=user.email||'';r.phoneNumber||'';
+  loadStats(user.uid);
+  loadAiMsg();
+});
+
+document.getElementById('logoutBtn').onclick=()=>logout();
+
+async function loadStats(uid){
+  try{
+    const [stats,products,orders]=await Promise.all([getSellerStats(uid),getSellerProducts(uid),getSellerOrders(uid)]);
+    document.getElementById('statRev').textContent=`₹${stats.revenue.toLocaleString('en-IN')}`;
+    document.getElementById('statOrd').textContent=stats.totalOrders;
+    document.getElementById('statComm').textContent=`₹${stats.commission.toLocaleString('en-IN')}`;
+    document.getElementById('statProd').textContent=products.length;
+    const pending=orders.filter(o=>o.status==='confirmed').length;
+    document.getElementById('pendingCount').textContent=pending;
+    // Recent orders table
+    document.getElementById('recentOrdersTbl').innerHTML=orders.slice(0,5).map(o=>`<tr><td style="color:var(--accent)">${o.orderId}</td><td>${o.items?.[0]?.name||'—'}</td><td>₹${o.total?.toLocaleString('en-IN')}</td><td><span class="status-pill sp-${o.status||'pending'}">${o.status||'pending'}</span></td></tr>`).join('')||'<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:20px">No orders yet</td></tr>';
+    // Top products
+    document.getElementById('topProductsTbl').innerHTML=products.slice(0,5).map(p=>`<tr><td>${p.name}</td><td>${p.category||'—'}</td><td>₹${Number(p.price).toLocaleString('en-IN')}</td><td>${p.stock||'∞'}</td><td><span class="status-pill sp-${p.status==='active'?'active':'pending'}">${p.status||'pending'}</span></td><td>${p.sales||0}</td></tr>`).join('')||'<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">No products yet. <a href="seller-products.html" style="color:var(--accent)">Add your first →</a></td></tr>';
+  }catch(e){console.log(e);}
+}
+
+window.loadAiMsg=async function(){
+  const el=document.getElementById('aiMsg');
+  el.textContent='Generating AI insights...';
+  try{
+    const msg=await generateSellerMessage({monthlyRevenue:0,orders:0,rating:0,topProduct:'N/A',lowStock:0});
+    el.textContent=msg;
+  }catch(e){el.textContent='AI insights unavailable. Check your Groq API key in firebase-config.js';}
+};
+</script>
+</body>
+</html>

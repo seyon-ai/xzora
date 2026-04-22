@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>XZORA Admin — AI Control</title><link rel="stylesheet" href="admin.css"/><style>.ai-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px}.ai-out{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--text);line-height:1.7;min-height:50px;margin-top:10px;white-space:pre-wrap}.chat-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:280px;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:8px}.cm{display:flex;gap:8px}.ca{width:22px;height:22px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}.ca.ai{background:var(--accent);color:var(--bg)}.ca.u{background:var(--surface3);color:var(--muted)}.cb{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;color:var(--text);line-height:1.5;max-width:260px}.cb.u{background:rgba(232,213,163,.06);border-color:rgba(232,213,163,.1)}</style></head><body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar"><div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Admin Panel</div></div><div class="sb-user"><div class="sb-avatar" id="sbAvatar" style="background:var(--accent)">A</div><div><p class="sb-uname" id="sbName">Admin</p></div></div><nav class="sb-nav"><a href="admin-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a><a href="admin-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>All Orders</a><a href="admin-sellers.html" class="sb-item"><span class="sb-icon">🏪</span>Sellers</a><a href="admin-users.html" class="sb-item"><span class="sb-icon">👥</span>Users</a><a href="admin-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a><a href="admin-commission.html" class="sb-item"><span class="sb-icon">💰</span>Commission</a><a href="admin-ai.html" class="sb-item on"><span class="sb-icon">🤖</span>AI Control</a></nav><div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div></aside>
+<div class="main-wrap"><div class="top-bar"><span class="page-title">AI CONTROL PANEL</span><div class="top-actions"><div class="ai-badge"><span class="pulse-dot"></span>Groq Active</div></div></div>
+<div class="content"><div class="grid-2">
+  <div>
+    <div class="ai-card"><div class="card-title" style="font-size:18px">📊 Platform Report Generator</div><p style="font-size:12px;color:var(--muted);margin-bottom:12px">Generate AI insights about platform performance</p><select class="form-select" id="repType" style="margin-bottom:10px"><option>Weekly Performance Summary</option><option>Seller Health Report</option><option>Product Category Analysis</option><option>Customer Behavior Insights</option></select><button class="tb-btn tb-primary" onclick="genReport()">Generate Report</button><div class="ai-out" id="reportOut">Report will appear here...</div></div>
+    <div class="ai-card"><div class="card-title" style="font-size:18px">📢 Platform Announcement</div><p style="font-size:12px;color:var(--muted);margin-bottom:12px">AI-draft announcements for sellers and users</p><input class="form-input" type="text" id="annTopic" placeholder="e.g. New commission structure starting next month" style="margin-bottom:10px"/><button class="tb-btn tb-primary" onclick="genAnnouncement()">Draft Announcement</button><div class="ai-out" id="annOut">Announcement draft will appear here...</div></div>
+  </div>
+  <div>
+    <div class="ai-card"><div class="card-title" style="font-size:18px">💬 Admin AI Assistant</div><p style="font-size:12px;color:var(--muted);margin-bottom:12px">Ask anything about platform management</p>
+      <div class="chat-box" id="adminChat"><div class="cm"><div class="ca ai">X</div><div class="cb">Hello Admin! I can help with platform analytics, seller management, pricing strategies, and more. What do you need?</div></div></div>
+      <div style="display:flex;gap:8px"><input type="text" id="adminChatInput" class="form-input" placeholder="Ask anything..." style="font-size:12px" onkeydown="if(event.key==='Enter')sendAdminChat()"/><button class="tb-btn tb-primary" style="padding:9px 14px;font-size:12px" onclick="sendAdminChat()">Send</button></div>
+    </div>
+    <div class="ai-card" style="margin-top:14px"><div class="card-title" style="font-size:18px">⚙️ AI Status</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="color:var(--text)">Groq API (Primary)</span><span class="status-pill sp-active">Active</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="color:var(--text)">HuggingFace (Secondary)</span><span class="status-pill sp-active">Active</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="color:var(--text)">Customer Support Chat</span><span class="status-pill sp-active">Enabled</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="color:var(--text)">Auto Product Description</span><span class="status-pill sp-active">Enabled</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="color:var(--text)">Sentiment Analysis</span><span class="status-pill sp-pending">Beta</span></div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireAdmin, logout } from './auth.js';
+import { supportChat, generateMarketingCopy } from './ai.js';
+initCursor();
+let chatHistory=[];
+requireAdmin().then(user=>{document.getElementById('sbAvatar').textContent=(user.displayName||'A').charAt(0).toUpperCase();document.getElementById('sbName').textContent=user.displayName||'Admin';});
+document.getElementById('logoutBtn').onclick=()=>logout();
+
+window.genReport=async function(){
+  const el=document.getElementById('reportOut');
+  el.textContent='Generating report...'; el.style.color='var(--muted)';
+  try{
+    const type=document.getElementById('repType').value;
+    const reply=await supportChat([],`Generate a concise ${type} for an e-commerce platform called Xzora. Include key metrics format, bullet insights, and 2-3 actionable recommendations. Keep it professional and under 200 words.`);
+    el.textContent=reply; el.style.color='var(--text)';
+  }catch(e){el.textContent='Error: '+e.message;el.style.color='var(--red)';}
+};
+
+window.genAnnouncement=async function(){
+  const el=document.getElementById('annOut');
+  el.textContent='Drafting...'; el.style.color='var(--muted)';
+  try{
+    const topic=document.getElementById('annTopic').value||'platform update';
+    const reply=await supportChat([],`Draft a professional platform announcement email for Xzora sellers and customers about: ${topic}. Keep it clear, friendly, and under 120 words. Include subject line.`);
+    el.textContent=reply; el.style.color='var(--text)';
+  }catch(e){el.textContent='Error: '+e.message;el.style.color='var(--red)';}
+};
+
+window.sendAdminChat=async function(){
+  const input=document.getElementById('adminChatInput');
+  const msg=input.value.trim(); if(!msg)return;
+  input.value='';
+  const box=document.getElementById('adminChat');
+  box.innerHTML+=`<div class="cm"><div class="ca u">A</div><div class="cb u">${msg}</div></div>`;
+  box.innerHTML+=`<div class="cm" id="adTyping"><div class="ca ai">X</div><div class="cb" style="color:var(--muted)">...</div></div>`;
+  box.scrollTop=box.scrollHeight;
+  try{
+    const reply=await supportChat(chatHistory,msg);
+    chatHistory.push({role:'user',content:msg},{role:'assistant',content:reply});
+    document.getElementById('adTyping')?.remove();
+    box.innerHTML+=`<div class="cm"><div class="ca ai">X</div><div class="cb">${reply}</div></div>`;
+    box.scrollTop=box.scrollHeight;
+  }catch(e){document.getElementById('adTyping')?.remove();box.innerHTML+=`<div class="cm"><div class="ca ai">X</div><div class="cb" style="color:var(--red)">AI error: Check Groq key</div></div>`;}
+};
+</script></body></html>

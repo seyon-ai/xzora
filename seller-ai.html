@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA Seller — AI Tools</title>
+<link rel="stylesheet" href="seller.css"/>
+<style>
+.ai-tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px}
+.ai-tool-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.ai-tool-icon{font-size:28px}
+.ai-tool-title{font-family:var(--font-display);font-size:22px;letter-spacing:1px;color:var(--white)}
+.ai-tool-sub{font-size:12px;color:var(--muted)}
+.ai-output{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;color:var(--text);line-height:1.7;min-height:60px;white-space:pre-wrap;margin-top:12px}
+.ai-output.loading{color:var(--muted);font-style:italic}
+.chat-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;max-height:300px;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:10px}
+.chat-box::-webkit-scrollbar{width:3px}
+.cm{display:flex;gap:8px}
+.ca{width:24px;height:24px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.ca.ai{background:var(--accent);color:var(--bg)}
+.ca.u{background:var(--surface3);color:var(--muted)}
+.cb{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text);line-height:1.5;max-width:280px}
+.cb.u{background:rgba(232,213,163,.06);border-color:rgba(232,213,163,.12)}
+.chat-input-row{display:flex;gap:8px}
+.chat-input-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font-body);font-size:12px;outline:none}
+.chat-input-row input:focus{border-color:var(--accent)}
+.chat-send{padding:9px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:none;transition:background .2s}
+.chat-send:hover{background:var(--accent2)}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar">
+  <div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Seller Portal</div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">S</div><div><p class="sb-uname" id="sbName">Seller</p><p class="sb-uemail" id="sbEmail"></p></div></div>
+  <nav class="sb-nav">
+    <a href="seller-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a>
+    <a href="seller-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a>
+    <a href="seller-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>Orders</a>
+    <a href="seller-analytics.html" class="sb-item"><span class="sb-icon">📊</span>Analytics</a>
+    <a href="seller-ai.html" class="sb-item on"><span class="sb-icon">🤖</span>AI Tools</a>
+    <a href="seller-help.html" class="sb-item"><span class="sb-icon">❓</span>Help</a>
+  </nav>
+  <div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div>
+</aside>
+<div class="main-wrap">
+  <div class="top-bar"><span class="page-title">AI TOOLS</span><div class="top-actions"><div class="ai-badge"><span class="pulse-dot"></span>Groq + HuggingFace</div></div></div>
+  <div class="content">
+    <div class="grid-2">
+      <div>
+        <!-- Description Generator -->
+        <div class="ai-tool-card">
+          <div class="ai-tool-header"><span class="ai-tool-icon">✍️</span><div><p class="ai-tool-title">DESCRIPTION GENERATOR</p><p class="ai-tool-sub">Generate compelling product descriptions with AI</p></div></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Product Name</label><input class="form-input" type="text" id="gdName" placeholder="Sony WH-1000XM5"/></div>
+            <div class="form-group"><label class="form-label">Brand</label><input class="form-input" type="text" id="gdBrand" placeholder="Sony"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Key Features</label><input class="form-input" type="text" id="gdFeatures" placeholder="Noise cancelling, 30hr battery, USB-C"/></div>
+          <button class="tb-btn tb-primary" onclick="genDesc()">Generate Description</button>
+          <div class="ai-output loading" id="gdOutput">Your AI-generated description will appear here...</div>
+        </div>
+        <!-- Tag Generator -->
+        <div class="ai-tool-card">
+          <div class="ai-tool-header"><span class="ai-tool-icon">🏷️</span><div><p class="ai-tool-title">SEARCH TAG GENERATOR</p><p class="ai-tool-sub">Auto-generate SEO tags for better discoverability</p></div></div>
+          <div class="form-group"><label class="form-label">Product Name</label><input class="form-input" type="text" id="gtName" placeholder="Wireless Bluetooth Headphones"/></div>
+          <button class="tb-btn tb-primary" onclick="genTags()">Generate Tags</button>
+          <div class="ai-output loading" id="gtOutput">Tags will appear here...</div>
+        </div>
+        <!-- Marketing Copy -->
+        <div class="ai-tool-card">
+          <div class="ai-tool-header"><span class="ai-tool-icon">📢</span><div><p class="ai-tool-title">MARKETING COPY</p><p class="ai-tool-sub">Generate banners, emails, and push notifications</p></div></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="mcType"><option value="banner">Banner Headline</option><option value="email">Email Subject</option><option value="push">Push Notification</option></select></div>
+            <div class="form-group"><label class="form-label">Product/Offer</label><input class="form-input" type="text" id="mcProduct" placeholder="50% off on headphones"/></div>
+          </div>
+          <button class="tb-btn tb-primary" onclick="genMarketing()">Generate Copy</button>
+          <div class="ai-output loading" id="mcOutput">Marketing copy will appear here...</div>
+        </div>
+      </div>
+      <div>
+        <!-- AI Chat Support -->
+        <div class="ai-tool-card" style="height:fit-content">
+          <div class="ai-tool-header"><span class="ai-tool-icon">💬</span><div><p class="ai-tool-title">SELLER AI ASSISTANT</p><p class="ai-tool-sub">Ask anything about selling on Xzora</p></div></div>
+          <div class="chat-box" id="sellerChat">
+            <div class="cm"><div class="ca ai">X</div><div class="cb">Hi! I'm your Xzora seller assistant. Ask me about product listings, pricing strategies, commission rates, or anything about selling on Xzora!</div></div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="sellerChatInput" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendSellerChat()"/>
+            <button class="chat-send" onclick="sendSellerChat()">Send</button>
+          </div>
+        </div>
+        <!-- Category Classifier -->
+        <div class="ai-tool-card" style="margin-top:14px">
+          <div class="ai-tool-header"><span class="ai-tool-icon">🗂️</span><div><p class="ai-tool-title">CATEGORY CLASSIFIER</p><p class="ai-tool-sub">Auto-detect the best category for your product</p></div></div>
+          <div class="form-group"><label class="form-label">Product Name</label><input class="form-input" type="text" id="ccName" placeholder="Running shoes with air cushion"/></div>
+          <button class="tb-btn tb-primary" onclick="classifyCategory()">Detect Category</button>
+          <div class="ai-output loading" id="ccOutput">Detected category will appear here...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireSeller, logout } from './auth.js';
+import { generateProductDescription, generateProductTags, generateMarketingCopy, supportChat, classifyProduct } from './ai.js';
+initCursor();
+let chatHistory=[];
+
+requireSeller().then(user=>{
+  document.getElementById('sbAvatar').textContent=(user.displayName||'S').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Seller';
+  document.getElementById('sbEmail').textContent=user.email||'';
+});
+document.getElementById('logoutBtn').onclick=()=>{ import('./auth.js').then(m=>m.logout()); };
+
+window.genDesc=async function(){
+  const el=document.getElementById('gdOutput');
+  el.className='ai-output loading'; el.textContent='Generating...';
+  try{const d=await generateProductDescription({name:document.getElementById('gdName').value,brand:document.getElementById('gdBrand').value,features:document.getElementById('gdFeatures').value});el.className='ai-output';el.textContent=d;}
+  catch(e){el.textContent='Error: '+e.message;}
+};
+
+window.genTags=async function(){
+  const el=document.getElementById('gtOutput');
+  el.className='ai-output loading'; el.textContent='Generating...';
+  try{const tags=await generateProductTags({name:document.getElementById('gtName').value});el.className='ai-output';el.textContent=tags.join(', ');}
+  catch(e){el.textContent='Error: '+e.message;}
+};
+
+window.genMarketing=async function(){
+  const el=document.getElementById('mcOutput');
+  el.className='ai-output loading'; el.textContent='Generating...';
+  try{const copy=await generateMarketingCopy(document.getElementById('mcType').value,{product:document.getElementById('mcProduct').value});el.className='ai-output';el.textContent=copy;}
+  catch(e){el.textContent='Error: '+e.message;}
+};
+
+window.sendSellerChat=async function(){
+  const input=document.getElementById('sellerChatInput');
+  const msg=input.value.trim(); if(!msg)return;
+  input.value='';
+  const box=document.getElementById('sellerChat');
+  box.innerHTML+=`<div class="cm"><div class="ca u">U</div><div class="cb u">${msg}</div></div>`;
+  box.innerHTML+=`<div class="cm" id="typingMsg"><div class="ca ai">X</div><div class="cb" style="color:var(--muted)">Thinking...</div></div>`;
+  box.scrollTop=box.scrollHeight;
+  try{
+    const reply=await supportChat(chatHistory,msg);
+    chatHistory.push({role:'user',content:msg},{role:'assistant',content:reply});
+    document.getElementById('typingMsg')?.remove();
+    box.innerHTML+=`<div class="cm"><div class="ca ai">X</div><div class="cb">${reply}</div></div>`;
+    box.scrollTop=box.scrollHeight;
+  }catch(e){document.getElementById('typingMsg')?.remove();box.innerHTML+=`<div class="cm"><div class="ca ai">X</div><div class="cb" style="color:var(--red)">AI unavailable. Check Groq API key.</div></div>`;}
+};
+
+window.classifyCategory=async function(){
+  const el=document.getElementById('ccOutput');
+  el.className='ai-output loading'; el.textContent='Classifying...';
+  try{const cat=await classifyProduct(document.getElementById('ccName').value);el.className='ai-output';el.textContent=`✓ Best category: ${cat}`;}
+  catch(e){el.textContent='Error: '+e.message;}
+};
+</script>
+</body>
+</html>

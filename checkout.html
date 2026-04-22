@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — Checkout</title>
+<link rel="stylesheet" href="main.css"/>
+<style>
+.co-page{padding:calc(var(--nav-h)+24px) 60px 60px;display:grid;grid-template-columns:1fr 340px;gap:28px;min-height:100vh}
+.co-title{font-family:var(--font-display);font-size:36px;letter-spacing:2px;color:var(--white);margin-bottom:6px}
+.step-bar{display:flex;align-items:center;gap:0;margin-bottom:28px}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:1px;text-transform:uppercase}
+.step-num{width:24px;height:24px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)}
+.step.on .step-num{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.step.done .step-num{background:var(--green);border-color:var(--green);color:var(--bg)}
+.step-label{color:var(--muted)}
+.step.on .step-label{color:var(--text)}
+.step-sep{flex:1;height:1px;background:var(--border);margin:0 12px}
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.sc-title{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.sc-title button{font-size:11px;color:var(--accent);background:none;border:none;cursor:none;text-transform:uppercase;letter-spacing:.5px}
+.addr-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pay-methods{display:flex;flex-direction:column;gap:8px}
+.pay-opt{border:1px solid var(--border);border-radius:10px;cursor:none;transition:all .2s;overflow:hidden}
+.pay-opt.on{border-color:var(--accent)}
+.pay-header{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.pay-radio{width:16px;height:16px;border-radius:50%;border:1px solid var(--border2);flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.pay-opt.on .pay-radio{border-color:var(--accent);background:var(--accent)}
+.pay-opt.on .pay-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--bg)}
+.pay-icon{font-size:20px}
+.pay-name{font-size:13px;color:var(--text)}
+.pay-sub{font-size:11px;color:var(--muted)}
+.pay-body{padding:0 16px 16px;display:none}
+.pay-opt.on .pay-body{display:block}
+.upi-scanner{text-align:center;padding:16px}
+.upi-qr{width:140px;height:140px;background:white;border-radius:8px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:80px}
+.upi-id{font-size:12px;color:var(--muted);letter-spacing:.5px}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cod-note{font-size:12px;color:var(--muted);line-height:1.6;padding:8px 0}
+.order-summary-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;position:sticky;top:calc(var(--nav-h)+24px)}
+.os-title{font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:var(--white);margin-bottom:16px}
+.os-item{display:flex;gap:10px;margin-bottom:12px;align-items:center}
+.os-thumb{width:44px;height:44px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
+.os-thumb img{width:100%;height:100%;object-fit:cover}
+.os-iname{font-size:12px;color:var(--text);margin-bottom:2px}
+.os-iprice{font-size:11px;color:var(--accent)}
+.os-divider{height:1px;background:var(--border);margin:14px 0}
+.os-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.os-row .lbl{color:var(--muted)}
+.os-row.total{font-size:16px;border-top:1px solid var(--border);padding-top:12px;margin-top:4px}
+.os-row.total .lbl{color:var(--text)}
+.os-row.total .val{color:var(--accent);font-family:var(--font-display);font-size:22px;letter-spacing:1px}
+.place-btn{width:100%;padding:14px;background:var(--accent);color:var(--bg);border:none;border-radius:10px;font-family:var(--font-body);font-size:13px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;cursor:none;transition:all .2s;margin-top:16px;position:relative;overflow:hidden}
+.place-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+@media(max-width:1024px){.co-page{grid-template-columns:1fr;padding:calc(var(--nav-h)+16px) 20px 40px}.addr-grid{grid-template-columns:1fr}.card-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<nav class="xz-nav">
+  <a href="index.html" class="logo">XZ<span>O</span>RA</a>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge cart-count" style="display:none">0</span></a>
+    <a href="auth.html" class="nav-btn" id="navAuthBtn">Sign In</a>
+  </div>
+</nav>
+<div class="co-page">
+  <div>
+    <h1 class="co-title">CHECKOUT</h1>
+    <div class="step-bar">
+      <div class="step on"><div class="step-num">1</div><span class="step-label">Address</span></div>
+      <div class="step-sep"></div>
+      <div class="step" id="step2"><div class="step-num">2</div><span class="step-label">Payment</span></div>
+      <div class="step-sep"></div>
+      <div class="step" id="step3"><div class="step-num">3</div><span class="step-label">Confirm</span></div>
+    </div>
+    <!-- Address -->
+    <div class="section-card">
+      <div class="sc-title"><span>DELIVERY ADDRESS</span></div>
+      <div class="addr-grid">
+        <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" type="text" id="adName" placeholder="Arjun Sharma"/></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" type="tel" id="adPhone" placeholder="9876543210"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Address Line 1</label><input class="form-input" type="text" id="adLine1" placeholder="House/Flat no., Street"/></div>
+      <div class="form-group"><label class="form-label">Address Line 2 (Optional)</label><input class="form-input" type="text" id="adLine2" placeholder="Area, Landmark"/></div>
+      <div class="addr-grid">
+        <div class="form-group"><label class="form-label">City</label><input class="form-input" type="text" id="adCity" placeholder="Mumbai"/></div>
+        <div class="form-group"><label class="form-label">State</label><select class="form-select" id="adState"><option>Select State</option><option>Maharashtra</option><option>Delhi</option><option>Karnataka</option><option>Tamil Nadu</option><option>Gujarat</option><option>Uttar Pradesh</option><option>West Bengal</option><option>Rajasthan</option><option>Telangana</option><option>Kerala</option></select></div>
+      </div>
+      <div class="addr-grid">
+        <div class="form-group"><label class="form-label">Pincode</label><input class="form-input" type="text" id="adPin" placeholder="400001" maxlength="6"/></div>
+        <div class="form-group"><label class="form-label">Country</label><select class="form-select" id="adCountry"><option value="IN">India 🇮🇳</option><option value="US">USA 🇺🇸</option><option value="GB">UK 🇬🇧</option><option value="AE">UAE 🇦🇪</option></select></div>
+      </div>
+    </div>
+    <!-- Payment -->
+    <div class="section-card">
+      <div class="sc-title">PAYMENT METHOD</div>
+      <div class="pay-methods">
+        <!-- COD -->
+        <div class="pay-opt on" id="payOptCOD" onclick="selectPay('COD')">
+          <div class="pay-header"><div class="pay-radio"></div><span class="pay-icon">💵</span><div><p class="pay-name">Cash on Delivery</p><p class="pay-sub">Pay when your order arrives</p></div></div>
+          <div class="pay-body"><p class="cod-note">✓ No online payment required<br>✓ Pay in cash when delivered<br>✓ Available across India</p></div>
+        </div>
+        <!-- UPI -->
+        <div class="pay-opt" id="payOptUPI" onclick="selectPay('UPI')">
+          <div class="pay-header"><div class="pay-radio"></div><span class="pay-icon">📱</span><div><p class="pay-name">UPI / QR Scanner</p><p class="pay-sub">Google Pay, PhonePe, Paytm, BHIM</p></div></div>
+          <div class="pay-body">
+            <div class="upi-scanner">
+              <div class="upi-qr">📲</div>
+              <p class="upi-id">Scan with any UPI app</p>
+              <p style="font-size:11px;color:var(--muted);margin-top:6px">Or pay to UPI ID: <strong style="color:var(--accent)">xzora@upi</strong></p>
+            </div>
+            <div class="form-group"><label class="form-label">Or Enter UPI ID</label><input class="form-input" type="text" placeholder="yourname@upi"/></div>
+          </div>
+        </div>
+        <!-- Card -->
+        <div class="pay-opt" id="payOptCard" onclick="selectPay('Card')">
+          <div class="pay-header"><div class="pay-radio"></div><span class="pay-icon">💳</span><div><p class="pay-name">Credit / Debit Card</p><p class="pay-sub">Visa, Mastercard, RuPay, Amex</p></div></div>
+          <div class="pay-body">
+            <div class="form-group"><label class="form-label">Card Number</label><input class="form-input" type="text" id="cardNum" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)"/></div>
+            <div class="card-grid">
+              <div class="form-group"><label class="form-label">Expiry</label><input class="form-input" type="text" id="cardExp" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)"/></div>
+              <div class="form-group"><label class="form-label">CVV</label><input class="form-input" type="password" id="cardCvv" placeholder="•••" maxlength="4"/></div>
+            </div>
+            <div class="form-group"><label class="form-label">Name on Card</label><input class="form-input" type="text" placeholder="ARJUN SHARMA"/></div>
+          </div>
+        </div>
+        <!-- International (Stripe) -->
+        <div class="pay-opt" id="payOptStripe" onclick="selectPay('Stripe')">
+          <div class="pay-header"><div class="pay-radio"></div><span class="pay-icon">🌍</span><div><p class="pay-name">International Card (Stripe)</p><p class="pay-sub">For international orders</p></div></div>
+          <div class="pay-body"><p class="cod-note">Secure international payment via Stripe. Supports Visa, Mastercard, and Amex globally.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Order Summary -->
+  <div>
+    <div class="order-summary-box">
+      <p class="os-title">YOUR ORDER</p>
+      <div id="osSummaryItems"></div>
+      <div class="os-divider"></div>
+      <div class="os-row"><span class="lbl">Subtotal</span><span id="osSubtotal">₹0</span></div>
+      <div class="os-row" style="color:var(--green)"><span class="lbl">Discount</span><span id="osDiscount">–₹0</span></div>
+      <div class="os-row"><span class="lbl">Delivery</span><span id="osDelivery">₹0</span></div>
+      <div class="os-row total"><span class="lbl">Total</span><span class="val" id="osTotal">₹0</span></div>
+      <button class="place-btn" id="placeBtn" onclick="placeOrder()">Place Order →</button>
+      <p style="font-size:10px;color:var(--muted2);text-align:center;margin-top:10px">🔒 256-bit SSL encrypted checkout</p>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initCursor, toast, genOrderId, updateCartBadge } from './utils.js';
+import { requireAuth } from './auth.js';
+import { listenCart, clearCart, calcCartTotals } from './cart.js';
+import { db } from './firebase-config.js';
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+initCursor();
+let cartItems=[], currentUser=null, payMethod='COD';
+
+requireAuth().then(u=>{ currentUser=u; document.getElementById('navAuthBtn').textContent=u.displayName?.split(' ')[0]||'Account'; document.getElementById('navAuthBtn').href='profile.html';
+  // Prefill name
+  if(u.displayName) document.getElementById('adName').value=u.displayName;
+  if(u.phoneNumber) document.getElementById('adPhone').value=u.phoneNumber;
+});
+
+listenCart(items=>{
+  cartItems=items; updateCartBadge(items.reduce((s,i)=>s+i.qty,0));
+  if(!items.length&&location.pathname.includes('checkout')){ window.location.href='cart.html'; return; }
+  const t=calcCartTotals(items);
+  document.getElementById('osSummaryItems').innerHTML=items.map(i=>`<div class="os-item"><div class="os-thumb">${i.imageUrl?`<img src="${i.imageUrl}" loading="lazy"/>`:(i.emoji||'📦')}</div><div><p class="os-iname">${i.name} ×${i.qty}</p><p class="os-iprice">₹${(i.price*i.qty).toLocaleString('en-IN')}</p></div></div>`).join('');
+  document.getElementById('osSubtotal').textContent=`₹${t.subtotal.toLocaleString('en-IN')}`;
+  document.getElementById('osDiscount').textContent=`–₹${t.discount.toLocaleString('en-IN')}`;
+  document.getElementById('osDelivery').textContent=t.delivery===0?'FREE':`₹${t.delivery}`;
+  document.getElementById('osTotal').textContent=`₹${t.total.toLocaleString('en-IN')}`;
+});
+
+window.selectPay=function(m){ payMethod=m; document.querySelectorAll('.pay-opt').forEach(o=>o.classList.remove('on')); document.getElementById(`payOpt${m}`).classList.add('on'); };
+window.fmtCard=function(el){ el.value=el.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim(); };
+window.fmtExp=function(el){ let v=el.value.replace(/\D/g,''); if(v.length>=2)v=v.slice(0,2)+' / '+v.slice(2); el.value=v; };
+
+window.placeOrder=async function(){
+  const name=document.getElementById('adName').value.trim();
+  const phone=document.getElementById('adPhone').value.trim();
+  const line1=document.getElementById('adLine1').value.trim();
+  const city=document.getElementById('adCity').value.trim();
+  const pin=document.getElementById('adPin').value.trim();
+  if(!name||!phone||!line1||!city||!pin){ toast('Please fill all required address fields','error'); return; }
+  if(payMethod==='Card'){
+    const cardNum=document.getElementById('cardNum').value.replace(/\s/g,'');
+    if(cardNum.length<16){ toast('Enter a valid card number','error'); return; }
+  }
+  const btn=document.getElementById('placeBtn'); btn.textContent='Placing Order...'; btn.disabled=true;
+  try{
+    const t=calcCartTotals(cartItems);
+    const orderId=genOrderId();
+    await addDoc(collection(db,'orders'),{
+      orderId, userId:currentUser.uid, userName:name, userPhone:phone,
+      items:cartItems,
+      address:{name,phone,line1,line2:document.getElementById('adLine2').value,city,state:document.getElementById('adState').value,pincode:pin,country:document.getElementById('adCountry').value},
+      payment:{method:payMethod},
+      subtotal:t.subtotal, discount:t.discount, delivery:t.delivery, total:t.total,
+      status:'confirmed', createdAt:serverTimestamp(),
+      timeline:[{status:'confirmed',time:new Date().toISOString(),label:'Order Confirmed'}]
+    });
+    await clearCart();
+    toast('🎉 Order placed successfully!','success');
+    setTimeout(()=>window.location.href=`tracking.html?id=${orderId}`,800);
+  }catch(e){ toast(e.message,'error'); btn.textContent='Place Order →'; btn.disabled=false; }
+};
+</script>
+</body>
+</html>

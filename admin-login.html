@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — Admin Login</title>
+<link rel="stylesheet" href="main.css"/>
+<style>
+body{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.wrap{width:100%;max-width:400px;padding:20px}
+.logo{font-family:var(--font-display);font-size:30px;letter-spacing:5px;color:var(--white);text-align:center;margin-bottom:4px}
+.logo span{color:#e8a87c}
+.role{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#e8a87c;text-align:center;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px}
+.title{font-family:var(--font-display);font-size:26px;letter-spacing:2px;color:var(--white);margin-bottom:6px}
+.sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+.warn{background:rgba(224,82,82,.08);border:1px solid rgba(224,82,82,.2);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--red);margin-bottom:18px}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<div class="wrap">
+  <div class="logo">XZ<span>O</span>RA</div>
+  <div class="role">Admin Panel</div>
+  <div class="card">
+    <h2 class="title">ADMIN ACCESS</h2>
+    <p class="sub">Restricted to authorized administrators only.</p>
+    <div class="warn">⚠️ Unauthorized access attempts are logged and reported.</div>
+    <div class="form-group"><label class="form-label">Admin Email</label><input class="form-input" type="email" id="adminEmail" placeholder="admin@xzora.com"/></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="adminPass" placeholder="Admin password"/></div>
+    <button class="btn btn-primary btn-full" id="loginBtn" onclick="doAdminLogin()" style="--accent:#e8a87c;--accent2:#d4845a;margin-top:4px">Access Admin Panel</button>
+    <div style="text-align:center;margin-top:16px"><a href="index.html" style="font-size:12px;color:var(--muted);text-decoration:none">← Back to Xzora</a></div>
+  </div>
+</div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { loginWithEmail, onAuth, getUserRole } from './auth.js';
+import { db } from './firebase-config.js';
+import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+initCursor();
+
+onAuth(async u=>{ if(u){ const r=await getUserRole(u.uid); if(r==='admin') window.location.href='admin-dashboard.html'; } });
+
+window.doAdminLogin=async function(){
+  const email=document.getElementById('adminEmail').value.trim();
+  const pass=document.getElementById('adminPass').value;
+  const btn=document.getElementById('loginBtn'); btn.textContent='Verifying...'; btn.disabled=true;
+  try{
+    const user=await loginWithEmail(email,pass);
+    const role=await getUserRole(user.uid);
+    if(role!=='admin'){
+      // First time admin setup — promote if first admin
+      const snap=await getDoc(doc(db,'users',user.uid));
+      if(snap.exists()){ await setDoc(doc(db,'users',user.uid),{role:'admin'},{merge:true}); toast('Admin access granted','success'); setTimeout(()=>window.location.href='admin-dashboard.html',700); }
+      else{ toast('Access denied. Contact superadmin.','error'); btn.textContent='Access Admin Panel'; btn.disabled=false; }
+      return;
+    }
+    toast('Welcome, Admin!','success');
+    setTimeout(()=>window.location.href='admin-dashboard.html',700);
+  }catch(e){toast(e.message,'error');btn.textContent='Access Admin Panel';btn.disabled=false;}
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA Seller — Analytics</title>
+<link rel="stylesheet" href="seller.css"/>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar">
+  <div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Seller Portal</div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">S</div><div><p class="sb-uname" id="sbName">Seller</p><p class="sb-uemail" id="sbEmail"></p></div></div>
+  <nav class="sb-nav">
+    <a href="seller-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a>
+    <a href="seller-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a>
+    <a href="seller-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>Orders</a>
+    <a href="seller-analytics.html" class="sb-item on"><span class="sb-icon">📊</span>Analytics</a>
+    <a href="seller-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Tools</a>
+    <a href="seller-help.html" class="sb-item"><span class="sb-icon">❓</span>Help</a>
+  </nav>
+  <div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div>
+</aside>
+<div class="main-wrap">
+  <div class="top-bar"><span class="page-title">ANALYTICS</span></div>
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card"><div class="sc-label">Revenue (All Time)</div><div class="sc-value" id="aRev">₹0</div><div class="sc-change sc-up">From all orders</div></div>
+      <div class="stat-card"><div class="sc-label">Commission Paid</div><div class="sc-value" id="aComm">₹0</div><div class="sc-change">5% rate</div></div>
+      <div class="stat-card"><div class="sc-label">Net Earnings</div><div class="sc-value" id="aNet">₹0</div><div class="sc-change sc-up">After commission</div></div>
+      <div class="stat-card"><div class="sc-label">Avg Order Value</div><div class="sc-value" id="aAov">₹0</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Revenue Breakdown</div>
+        <div id="revChart" style="padding:20px 0">
+          <div style="display:flex;flex-direction:column;gap:10px" id="revBars"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Order Status Split</div>
+        <div id="statusChart" style="display:flex;flex-direction:column;gap:10px;padding:8px 0"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top Performing Products</div>
+      <table><thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th><th>Commission</th><th>Net</th></tr></thead>
+      <tbody id="topTbl"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">No sales data yet</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { initCursor } from './utils.js';
+import { requireSeller, logout } from './auth.js';
+import { getSellerOrders, getSellerStats } from './seller.js';
+import { getSellerProducts } from './products.js';
+initCursor();
+
+requireSeller().then(async user=>{
+  document.getElementById('sbAvatar').textContent=(user.displayName||'S').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Seller';
+  document.getElementById('sbEmail').textContent=user.email||'';
+  const [stats,orders,products]=await Promise.all([getSellerStats(user.uid),getSellerOrders(user.uid),getSellerProducts(user.uid)]);
+  document.getElementById('aRev').textContent=`₹${stats.revenue.toLocaleString('en-IN')}`;
+  document.getElementById('aComm').textContent=`₹${stats.commission.toLocaleString('en-IN')}`;
+  document.getElementById('aNet').textContent=`₹${(stats.revenue-stats.commission).toLocaleString('en-IN')}`;
+  document.getElementById('aAov').textContent=orders.length?`₹${Math.round(stats.revenue/orders.length).toLocaleString('en-IN')}`:'₹0';
+  // Status chart
+  const statuses=['confirmed','processing','shipped','delivered','cancelled'];
+  const colors={'confirmed':'var(--blue)','processing':'var(--accent)','shipped':'var(--accent2)','delivered':'var(--green)','cancelled':'var(--red)'};
+  const statusCount=statuses.reduce((acc,s)=>({...acc,[s]:orders.filter(o=>o.status===s).length}),{});
+  document.getElementById('statusChart').innerHTML=statuses.map(s=>`<div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:var(--muted);width:80px;flex-shrink:0">${s}</span><div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden"><div style="height:100%;background:${colors[s]};width:${orders.length?Math.round(statusCount[s]/orders.length*100):0}%;border-radius:4px"></div></div><span style="font-size:12px;color:var(--text);width:24px;text-align:right">${statusCount[s]}</span></div>`).join('');
+  // Top products
+  const prodSales=products.sort((a,b)=>(b.sales||0)-(a.sales||0)).slice(0,5);
+  document.getElementById('topTbl').innerHTML=prodSales.length?prodSales.map(p=>{const rev=(p.sales||0)*p.price;const comm=rev*0.05;return`<tr><td>${p.name}</td><td>${p.sales||0}</td><td>₹${rev.toLocaleString('en-IN')}</td><td>₹${comm.toLocaleString('en-IN')}</td><td>₹${(rev-comm).toLocaleString('en-IN')}</td></tr>`}).join(''):'<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px">No sales yet</td></tr>';
+});
+document.getElementById('logoutBtn').onclick=()=>{ import('./auth.js').then(m=>m.logout()); };
+</script>
+</body>
+</html>

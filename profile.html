@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — My Profile</title>
+<link rel="stylesheet" href="main.css"/>
+<style>
+.profile-page{padding:calc(var(--nav-h)+28px) 60px 60px;display:grid;grid-template-columns:240px 1fr;gap:24px;min-height:100vh}
+.sidebar-nav{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;height:fit-content;position:sticky;top:calc(var(--nav-h)+28px)}
+.profile-avatar{width:72px;height:72px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:var(--bg);margin:0 auto 12px;font-family:var(--font-display)}
+.profile-name{font-size:14px;color:var(--text);text-align:center;margin-bottom:4px}
+.profile-email{font-size:11px;color:var(--muted);text-align:center;margin-bottom:20px}
+.pf-divider{height:1px;background:var(--border);margin-bottom:14px}
+.pf-nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:none;transition:all .2s;font-size:13px;color:var(--muted);margin-bottom:4px}
+.pf-nav-item:hover{background:var(--surface2);color:var(--text)}
+.pf-nav-item.on{background:rgba(232,213,163,.08);color:var(--accent);border:1px solid rgba(232,213,163,.12)}
+.pf-nav-icon{font-size:16px;width:20px;text-align:center}
+.pf-section{display:none}
+.pf-section.on{display:block}
+.pf-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px}
+.pf-card-title{font-family:var(--font-display);font-size:24px;letter-spacing:2px;color:var(--white);margin-bottom:20px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.sc-n{font-family:var(--font-display);font-size:28px;color:var(--accent);letter-spacing:1px}
+.sc-l{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.5px;text-transform:uppercase}
+.order-mini{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;cursor:none;transition:border-color .2s}
+.order-mini:hover{border-color:var(--border2)}
+.om-id{font-size:12px;color:var(--accent);font-weight:500;margin-bottom:2px}
+.om-date{font-size:11px;color:var(--muted2)}
+.om-amount{font-size:14px;color:var(--text)}
+.logout-btn{width:100%;margin-top:12px;background:rgba(224,82,82,.08);color:var(--red);border:1px solid rgba(224,82,82,.2);border-radius:8px;padding:10px;font-family:var(--font-body);font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:none;transition:all .2s}
+.logout-btn:hover{background:rgba(224,82,82,.15)}
+@media(max-width:1024px){.profile-page{grid-template-columns:1fr;padding:calc(var(--nav-h)+16px) 20px 40px}.stat-cards{grid-template-columns:1fr 1fr}.info-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<nav class="xz-nav">
+  <a href="index.html" class="logo">XZ<span>O</span>RA</a>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge cart-count" style="display:none">0</span></a>
+  </div>
+</nav>
+<div class="profile-page">
+  <aside class="sidebar-nav">
+    <div class="profile-avatar" id="pfAvatar">?</div>
+    <p class="profile-name" id="pfName">Loading...</p>
+    <p class="profile-email" id="pfEmail"></p>
+    <div class="pf-divider"></div>
+    <div class="pf-nav-item on" onclick="showTab('overview',this)"><span class="pf-nav-icon">🏠</span>Overview</div>
+    <div class="pf-nav-item" onclick="showTab('orders',this)"><span class="pf-nav-icon">📦</span>My Orders</div>
+    <div class="pf-nav-item" onclick="showTab('wishlist',this)"><span class="pf-nav-icon">♡</span>Wishlist</div>
+    <div class="pf-nav-item" onclick="showTab('addresses',this)"><span class="pf-nav-icon">📍</span>Addresses</div>
+    <div class="pf-nav-item" onclick="showTab('settings',this)"><span class="pf-nav-icon">⚙</span>Settings</div>
+    <div class="pf-divider"></div>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+  </aside>
+  <main>
+    <!-- Overview -->
+    <div class="pf-section on" id="tab-overview">
+      <div class="stat-cards">
+        <div class="stat-card"><div class="sc-n" id="statOrders">0</div><div class="sc-l">Total Orders</div></div>
+        <div class="stat-card"><div class="sc-n" id="statSpent">₹0</div><div class="sc-l">Total Spent</div></div>
+        <div class="stat-card"><div class="sc-n" id="statWish">0</div><div class="sc-l">Wishlist</div></div>
+      </div>
+      <div class="pf-card">
+        <p class="pf-card-title">RECENT ORDERS</p>
+        <div id="recentOrders"><p style="color:var(--muted);font-size:13px">No orders yet. <a href="products.html" style="color:var(--accent)">Start shopping →</a></p></div>
+      </div>
+    </div>
+    <!-- Orders -->
+    <div class="pf-section" id="tab-orders">
+      <div class="pf-card">
+        <p class="pf-card-title">MY ORDERS</p>
+        <div id="allOrdersList"><p style="color:var(--muted);font-size:13px">No orders yet.</p></div>
+      </div>
+    </div>
+    <!-- Wishlist -->
+    <div class="pf-section" id="tab-wishlist">
+      <div class="pf-card">
+        <p class="pf-card-title">WISHLIST</p>
+        <div class="empty-state" style="padding:40px 0"><div class="empty-icon">♡</div><p class="empty-sub">No items in your wishlist yet</p><a href="products.html" class="btn btn-primary btn-sm" style="display:inline-flex;margin-top:8px">Browse Products</a></div>
+      </div>
+    </div>
+    <!-- Addresses -->
+    <div class="pf-section" id="tab-addresses">
+      <div class="pf-card">
+        <p class="pf-card-title">SAVED ADDRESSES</p>
+        <div class="empty-state" style="padding:40px 0"><div class="empty-icon">📍</div><p class="empty-sub">No saved addresses</p><p style="font-size:12px;color:var(--muted2);margin-top:6px">Addresses are saved automatically when you checkout</p></div>
+      </div>
+    </div>
+    <!-- Settings -->
+    <div class="pf-section" id="tab-settings">
+      <div class="pf-card">
+        <p class="pf-card-title">ACCOUNT SETTINGS</p>
+        <div class="info-grid">
+          <div class="form-group"><label class="form-label">Display Name</label><input class="form-input" type="text" id="settName" placeholder="Your name"/></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="settEmail" placeholder="email" readonly style="opacity:.5"/></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" type="tel" id="settPhone" placeholder="+91 XXXXXXXXXX"/></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Changes</button>
+      </div>
+      <div class="pf-card">
+        <p class="pf-card-title" style="font-size:20px">NOTIFICATIONS</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text)"><span>Order updates via SMS</span><div class="tog on" onclick="this.classList.toggle('on')"><div class="tog-knob"></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text)"><span>Deals & offers</span><div class="tog on" onclick="this.classList.toggle('on')"><div class="tog-knob"></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text)"><span>New arrivals</span><div class="tog" onclick="this.classList.toggle('on')"><div class="tog-knob"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<style>
+.tog{width:32px;height:18px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);position:relative;cursor:none;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--accent);border-color:var(--accent)}
+.tog-knob{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--muted);top:2px;left:2px;transition:all .2s}
+.tog.on .tog-knob{left:17px;background:var(--bg)}
+</style>
+<script type="module">
+import { initCursor, toast, updateCartBadge } from './utils.js';
+import { requireAuth, logout } from './auth.js';
+import { listenCart } from './cart.js';
+import { db } from './firebase-config.js';
+import { collection, query, where, getDocs, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+initCursor();
+let currentUser=null;
+listenCart(items=>updateCartBadge(items.reduce((s,i)=>s+i.qty,0)));
+
+requireAuth().then(async u=>{
+  currentUser=u;
+  const initials=(u.displayName||u.email||'?').charAt(0).toUpperCase();
+  document.getElementById('pfAvatar').textContent=initials;
+  document.getElementById('pfName').textContent=u.displayName||'Xzora User';
+  document.getElementById('pfEmail').textContent=u.email||u.phoneNumber||'';
+  document.getElementById('settName').value=u.displayName||'';
+  document.getElementById('settEmail').value=u.email||'';
+  document.getElementById('settPhone').value=u.phoneNumber||'';
+  loadOrders(u.uid);
+});
+
+async function loadOrders(uid){
+  try{
+    const q=query(collection(db,'orders'),where('userId','==',uid),orderBy('createdAt','desc'));
+    const snap=await getDocs(q);
+    const orders=snap.docs.map(d=>d.data());
+    document.getElementById('statOrders').textContent=orders.length;
+    const total=orders.reduce((s,o)=>s+(o.total||0),0);
+    document.getElementById('statSpent').textContent=`₹${total.toLocaleString('en-IN')}`;
+    const html=orders.slice(0,5).map(o=>`<div class="order-mini" onclick="window.location='tracking.html?id=${o.orderId}'"><div><p class="om-id">${o.orderId}</p><p class="om-date">${o.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})||'Recent'}</p></div><div style="text-align:right"><p class="om-amount">₹${o.total?.toLocaleString('en-IN')}</p><span class="status-chip st-${o.status||'confirmed'}" style="font-size:9px;padding:3px 8px">${o.status||'confirmed'}</span></div></div>`).join('');
+    document.getElementById('recentOrders').innerHTML=html||'<p style="color:var(--muted);font-size:13px">No orders yet.</p>';
+    document.getElementById('allOrdersList').innerHTML=orders.map(o=>`<div class="order-mini" onclick="window.location='tracking.html?id=${o.orderId}'"><div><p class="om-id">${o.orderId}</p><p class="om-date">${o.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})||'Recent'} · ${o.items?.length||0} items</p></div><div style="text-align:right"><p class="om-amount">₹${o.total?.toLocaleString('en-IN')}</p><span class="status-chip st-${o.status||'confirmed'}" style="font-size:9px;padding:3px 8px">${o.status||'confirmed'}</span></div></div>`).join('')||'<p style="color:var(--muted);font-size:13px">No orders yet.</p>';
+  }catch(e){console.log(e);}
+}
+
+window.showTab=function(tab,el){
+  document.querySelectorAll('.pf-section').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.pf-nav-item').forEach(n=>n.classList.remove('on'));
+  document.getElementById('tab-'+tab).classList.add('on');
+  el.classList.add('on');
+};
+
+window.saveSettings=async function(){
+  const name=document.getElementById('settName').value.trim();
+  try{ await updateProfile(currentUser,{displayName:name}); await updateDoc(doc(db,'users',currentUser.uid),{displayName:name}); document.getElementById('pfName').textContent=name; toast('Settings saved','success'); }catch(e){toast(e.message,'error');}
+};
+
+window.doLogout=async function(){ await logout(); };
+</script>
+</body>
+</html>

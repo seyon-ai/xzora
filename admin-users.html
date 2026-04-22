@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>XZORA Admin — Users</title><link rel="stylesheet" href="admin.css"/></head><body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar"><div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Admin Panel</div></div><div class="sb-user"><div class="sb-avatar" id="sbAvatar" style="background:var(--accent)">A</div><div><p class="sb-uname" id="sbName">Admin</p><p class="sb-uemail" id="sbEmail"></p></div></div><nav class="sb-nav"><a href="admin-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a><a href="admin-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>All Orders</a><a href="admin-sellers.html" class="sb-item"><span class="sb-icon">🏪</span>Sellers</a><a href="admin-users.html" class="sb-item on"><span class="sb-icon">👥</span>Users</a><a href="admin-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a><a href="admin-commission.html" class="sb-item"><span class="sb-icon">💰</span>Commission</a><a href="admin-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Control</a></nav><div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div></aside>
+<div class="main-wrap"><div class="top-bar"><span class="page-title">USERS</span></div>
+<div class="content"><div class="card"><table><thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Role</th><th>Change Role</th></tr></thead><tbody id="tbl"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:32px">Loading...</td></tr></tbody></table></div></div></div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireAdmin, logout } from './auth.js';
+import { getAllUsers, updateUserRole } from './admin.js';
+initCursor();
+requireAdmin().then(async user=>{
+  document.getElementById('sbAvatar').textContent=(user.displayName||'A').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Admin';
+  document.getElementById('sbEmail').textContent=user.email||'';
+  try{
+    const items=await getAllUsers();
+    document.getElementById('tbl').innerHTML=items.length?items.map(u=>`<tr><td>${u.displayName||'User'}</td><td>${u.email||u.phone||'—'}</td><td>${u.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||'—'}</td><td><span class="status-pill ${u.role==='admin'?'sp-active':u.role==='seller'?'sp-shipped':'sp-inactive'}">${u.role||'customer'}</span></td><td><select class="form-select" style="padding:4px 8px;font-size:11px;width:auto" onchange="changeRole('${u.id}',this.value)"><option value="customer" ${u.role==='customer'?'selected':''}>Customer</option><option value="seller" ${u.role==='seller'?'selected':''}>Seller</option><option value="admin" ${u.role==='admin'?'selected':''}>Admin</option></select></td></tr>`).join(''):'<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">No users yet</td></tr>';
+  }catch(e){document.getElementById('tbl').innerHTML=`<tr><td colspan="5" style="color:var(--red);text-align:center">${e.message}</td></tr>`;}
+});
+document.getElementById('logoutBtn').onclick=()=>logout();
+window.changeRole=async(uid,role)=>{try{await updateUserRole(uid,role);toast('Role updated','success');}catch(e){toast(e.message,'error');}};
+</script></body></html>

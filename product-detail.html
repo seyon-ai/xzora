@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — Product</title>
+<link rel="stylesheet" href="main.css"/>
+<style>
+.pd-wrap{padding:calc(var(--nav-h)+24px) 60px 60px;display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1200px;margin:0 auto}
+.breadcrumb{padding:calc(var(--nav-h)+12px) 60px 0;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.breadcrumb a{color:var(--muted);text-decoration:none}.breadcrumb a:hover{color:var(--accent)}
+.img-gallery{display:flex;flex-direction:column;gap:12px;position:sticky;top:calc(var(--nav-h)+24px)}
+.main-img{aspect-ratio:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:100px;overflow:hidden;position:relative}
+.main-img img{width:100%;height:100%;object-fit:cover}
+.thumb-row{display:flex;gap:8px}
+.thumb{width:64px;height:64px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:none;transition:all .2s;overflow:hidden}
+.thumb.on,.thumb:hover{border-color:var(--accent)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.pd-info{display:flex;flex-direction:column;gap:20px}
+.pd-brand{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent)}
+.pd-name{font-family:var(--font-display);font-size:clamp(28px,3vw,44px);letter-spacing:1px;color:var(--white);line-height:1.1}
+.pd-rating{display:flex;align-items:center;gap:10px}
+.pd-stars{color:var(--accent);font-size:16px;letter-spacing:2px}
+.pd-rc{font-size:12px;color:var(--muted)}
+.pd-rc a{color:var(--accent);text-decoration:none}
+.pd-price-row{display:flex;align-items:baseline;gap:12px}
+.pd-price{font-family:var(--font-display);font-size:40px;letter-spacing:1px;color:var(--accent)}
+.pd-old{font-size:16px;color:var(--muted2);text-decoration:line-through}
+.pd-disc{font-size:13px;color:var(--green);font-weight:500}
+.pd-badges{display:flex;gap:8px;flex-wrap:wrap}
+.variant-group{border-top:1px solid var(--border);padding-top:18px}
+.variant-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.variant-opts{display:flex;gap:8px;flex-wrap:wrap}
+.var-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--muted);cursor:none;transition:all .2s}
+.var-btn:hover{border-color:var(--border2);color:var(--text)}
+.var-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(232,213,163,.08)}
+.var-btn.unavailable{opacity:.35;text-decoration:line-through;pointer-events:none}
+.qty-row{display:flex;align-items:center;gap:12px}
+.qty-ctrl{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.qty-btn{width:36px;height:36px;background:var(--surface);border:none;color:var(--text);font-size:16px;cursor:none;transition:background .2s}
+.qty-btn:hover{background:var(--surface2)}
+.qty-val{width:44px;height:36px;background:var(--surface2);color:var(--text);border:none;text-align:center;font-family:var(--font-body);font-size:14px;font-weight:500}
+.action-row{display:flex;gap:10px}
+.delivery-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.delivery-item{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.delivery-item:last-child{border-bottom:none}
+.d-icon{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.d-text strong{font-size:13px;color:var(--text);font-weight:400;display:block}
+.d-text span{font-size:11px;color:var(--muted)}
+.pd-desc{font-size:14px;color:var(--muted);line-height:1.7;border-top:1px solid var(--border);padding-top:18px}
+.seller-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;align-items:center;justify-content:space-between}
+.seller-name{font-size:13px;color:var(--text);margin-bottom:2px}
+.seller-rating{font-size:11px;color:var(--muted)}
+.reviews-section{padding:0 60px 60px;max-width:1200px;margin:0 auto}
+.review-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.rev-header{display:flex;justify-content:space-between;margin-bottom:8px}
+.rev-user{font-size:13px;color:var(--text);font-weight:400}
+.rev-date{font-size:11px;color:var(--muted2)}
+.rev-stars{color:var(--accent);font-size:12px;letter-spacing:1px;margin-bottom:6px}
+.rev-text{font-size:13px;color:var(--muted);line-height:1.6}
+.add-review{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:24px}
+.star-select{display:flex;gap:6px;margin-bottom:12px}
+.ss{font-size:24px;cursor:none;opacity:.4;transition:opacity .2s}
+.ss.on{opacity:1}
+@media(max-width:1024px){.pd-wrap{grid-template-columns:1fr;padding:calc(var(--nav-h)+16px) 20px 40px}.breadcrumb{padding:calc(var(--nav-h)+8px) 20px 0}.reviews-section{padding:0 20px 40px}.img-gallery{position:static}}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<nav class="xz-nav">
+  <a href="index.html" class="logo">XZ<span>O</span>RA</a>
+  <div class="nav-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;stroke:var(--muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Search products..." onkeydown="if(event.key==='Enter')window.location='products.html?q='+encodeURIComponent(this.value)"/></div>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge cart-count" style="display:none">0</span></a>
+    <a href="auth.html" class="nav-btn" id="navAuthBtn">Sign In</a>
+  </div>
+</nav>
+<div class="breadcrumb"><a href="index.html">Home</a><span>›</span><a href="products.html" id="bcCat">Products</a><span>›</span><span id="bcName" style="color:var(--text)">Loading...</span></div>
+<div id="mainContent">
+  <div style="display:flex;align-items:center;justify-content:center;height:60vh"><div class="loader-bar" style="width:200px"><div class="loader-fill"></div></div></div>
+</div>
+<section class="reviews-section" id="reviewsSection" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <h2 class="section-title" style="font-size:32px">REVIEWS <span class="accent" id="revCount"></span></h2>
+  </div>
+  <div class="add-review" id="addReviewBox" style="display:none">
+    <h4 style="font-size:14px;color:var(--text);margin-bottom:12px">Write a Review</h4>
+    <div class="star-select" id="starSelect">
+      <span class="ss" onclick="setStars(1)">★</span><span class="ss" onclick="setStars(2)">★</span><span class="ss" onclick="setStars(3)">★</span><span class="ss" onclick="setStars(4)">★</span><span class="ss" onclick="setStars(5)">★</span>
+    </div>
+    <textarea class="form-input" id="reviewText" placeholder="Share your experience..." style="height:80px;resize:none;margin-bottom:10px"></textarea>
+    <button class="btn btn-primary btn-sm" onclick="submitReview()">Submit Review</button>
+  </div>
+  <div id="reviewsList"></div>
+</section>
+<script type="module">
+import { initCursor, toast, formatDate, updateCartBadge } from './utils.js';
+import { onAuth } from './auth.js';
+import { getProduct, getReviews, addReview, incrementViews } from './products.js';
+import { addToCart, listenCart } from './cart.js';
+initCursor();
+const pid = new URLSearchParams(location.search).get('id');
+let currentUser=null, selectedRating=0, qty=1, selectedVariant={};
+
+onAuth(u=>{ currentUser=u; if(u){document.getElementById('navAuthBtn').textContent=u.displayName?.split(' ')[0]||'Account';document.getElementById('navAuthBtn').href='profile.html';document.getElementById('addReviewBox').style.display='block';} });
+listenCart(items=>updateCartBadge(items.reduce((s,i)=>s+i.qty,0)));
+
+async function load() {
+  if(!pid){ document.getElementById('mainContent').innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div><p class="empty-title">NO PRODUCT ID</p><a href="products.html" class="btn btn-primary btn-sm" style="display:inline-flex;margin-top:12px">Browse Products</a></div>'; return; }
+  try {
+    const p = await getProduct(pid);
+    if(!p){ document.getElementById('mainContent').innerHTML='<div class="empty-state"><div class="empty-icon">😕</div><p class="empty-title">PRODUCT NOT FOUND</p><a href="products.html" class="btn btn-primary btn-sm" style="display:inline-flex;margin-top:12px">Browse Products</a></div>'; return; }
+    incrementViews(pid);
+    document.title = `XZORA — ${p.name}`;
+    document.getElementById('bcCat').textContent = p.category||'Products';
+    document.getElementById('bcCat').href = `products.html?cat=${p.category||'all'}`;
+    document.getElementById('bcName').textContent = p.name;
+    const thumbs = p.images?.length ? p.images.map((img,i)=>`<div class="thumb ${i===0?'on':''}" onclick="setMainImg('${img}',this)"><img src="${img}" loading="lazy"/></div>`).join('') : `<div class="thumb on">${p.emoji||'📦'}</div>`;
+    const mainImgContent = p.imageUrl||p.images?.[0] ? `<img src="${p.imageUrl||p.images[0]}" id="mainImgEl" alt="${p.name}"/>` : (p.emoji||'📦');
+    document.getElementById('mainContent').innerHTML = `
+      <div class="pd-wrap">
+        <div class="img-gallery">
+          <div class="main-img" id="mainImgWrap">${mainImgContent}</div>
+          <div class="thumb-row">${thumbs}</div>
+        </div>
+        <div class="pd-info">
+          <p class="pd-brand">${p.brand||'Xzora'}</p>
+          <h1 class="pd-name">${p.name}</h1>
+          <div class="pd-rating">
+            <span class="pd-stars">${'★'.repeat(Math.round(p.rating||0))}${'☆'.repeat(5-Math.round(p.rating||0))}</span>
+            <span class="pd-rc">${p.rating||0}/5 · <a href="#reviewsSection">${p.reviewCount||0} reviews</a></span>
+          </div>
+          <div class="pd-price-row">
+            <span class="pd-price">₹${Number(p.price).toLocaleString('en-IN')}</span>
+            ${p.originalPrice?`<span class="pd-old">₹${Number(p.originalPrice).toLocaleString('en-IN')}</span><span class="pd-disc">Save ${Math.round((1-p.price/p.originalPrice)*100)}%</span>`:''}
+          </div>
+          <div class="pd-badges">
+            ${p.inStock===false?'<span class="tag tag-red">Out of Stock</span>':'<span class="tag tag-green">In Stock</span>'}
+            <span class="tag tag-muted">Free delivery</span>
+            ${p.isNew?'<span class="tag tag-accent">New Arrival</span>':''}
+          </div>
+          ${p.sizes?.length?`<div class="variant-group"><div class="variant-label">Size</div><div class="variant-opts">${p.sizes.map(s=>`<button class="var-btn" onclick="selectVariant('size','${s}',this)">${s}</button>`).join('')}</div></div>`:''}
+          ${p.colors?.length?`<div class="variant-group"><div class="variant-label">Color</div><div class="variant-opts">${p.colors.map(c=>`<button class="var-btn" onclick="selectVariant('color','${c}',this)">${c}</button>`).join('')}</div></div>`:''}
+          <div class="variant-group">
+            <div class="variant-label">Quantity</div>
+            <div class="qty-row">
+              <div class="qty-ctrl"><button class="qty-btn" onclick="changeQty(-1)">−</button><input class="qty-val" type="number" id="qtyVal" value="1" min="1" max="10" readonly/><button class="qty-btn" onclick="changeQty(1)">+</button></div>
+              <span style="font-size:12px;color:var(--muted)">${p.stock?`${p.stock} left in stock`:''}</span>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn btn-primary btn-lg" style="flex:1" id="addCartBtn" onclick="doAddToCart(${JSON.stringify(p)})">Add to Cart</button>
+            <button class="btn btn-ghost btn-lg" style="flex:1" id="buyBtn" onclick="doBuyNow(${JSON.stringify(p)})">Buy Now</button>
+            <button class="btn btn-ghost" id="wishBtn" onclick="toggleWish(this)" style="padding:14px 16px" title="Wishlist">♡</button>
+          </div>
+          <div class="delivery-box">
+            <div class="delivery-item"><span class="d-icon">🚚</span><div class="d-text"><strong>Free Delivery</strong><span>On orders above ₹499</span></div></div>
+            <div class="delivery-item"><span class="d-icon">↩️</span><div class="d-text"><strong>7-Day Returns</strong><span>Hassle-free returns policy</span></div></div>
+            <div class="delivery-item"><span class="d-icon">💳</span><div class="d-text"><strong>COD Available</strong><span>Pay on delivery across India</span></div></div>
+          </div>
+          ${p.description?`<div class="pd-desc">${p.description}</div>`:''}
+          ${p.sellerId?`<div class="seller-box"><div><p class="seller-name">Sold by ${p.sellerName||'Xzora Seller'}</p><p class="seller-rating">⭐ Trusted Seller</p></div><a href="products.html?seller=${p.sellerId}" class="btn btn-ghost btn-sm">View Store</a></div>`:''}
+        </div>
+      </div>`;
+    document.getElementById('reviewsSection').style.display='block';
+    loadReviews(pid);
+  } catch(e){ document.getElementById('mainContent').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><p class="empty-title">ERROR LOADING</p><p class="empty-sub">${e.message}</p></div>`; }
+}
+
+async function loadReviews(pid) {
+  const reviews = await getReviews(pid);
+  document.getElementById('revCount').textContent = `(${reviews.length})`;
+  document.getElementById('reviewsList').innerHTML = reviews.length ? reviews.map(r=>`
+    <div class="review-card">
+      <div class="rev-header"><span class="rev-user">${r.userName||'Customer'}</span><span class="rev-date">${r.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})||''}</span></div>
+      <div class="rev-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+      <p class="rev-text">${r.comment}</p>
+    </div>`).join('') : '<p style="color:var(--muted);font-size:13px">No reviews yet. Be the first to review!</p>';
+}
+
+window.setMainImg = function(src,thumb){ document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('on')); thumb.classList.add('on'); const el=document.getElementById('mainImgEl'); if(el)el.src=src; };
+window.changeQty = function(d){ qty=Math.max(1,Math.min(10,qty+d)); document.getElementById('qtyVal').value=qty; };
+window.selectVariant = function(type,val,btn){ document.querySelectorAll(`.var-btn[onclick*="${type}"]`).forEach(b=>b.classList.remove('on')); btn.classList.add('on'); selectedVariant[type]=val; };
+window.toggleWish = function(btn){ btn.classList.toggle('active'); btn.textContent=btn.classList.contains('active')?'♥':'♡'; toast(btn.classList.contains('active')?'Added to wishlist':'Removed from wishlist','success'); };
+window.doAddToCart = async function(p){ const btn=document.getElementById('addCartBtn'); btn.textContent='Adding...'; btn.disabled=true; try{ await addToCart({...p,qty}); btn.textContent='✓ In Cart'; btn.style.background='var(--green)'; setTimeout(()=>{btn.textContent='Add to Cart';btn.style.background='';btn.disabled=false;},1800); }catch(e){toast(e.message,'error');btn.textContent='Add to Cart';btn.disabled=false;} };
+window.doBuyNow = async function(p){ await addToCart({...p,qty}); window.location.href='cart.html'; };
+window.setStars = function(n){ selectedRating=n; document.querySelectorAll('.ss').forEach((s,i)=>s.classList.toggle('on',i<n)); };
+window.submitReview = async function(){
+  if(!currentUser){toast('Sign in to write a review','error');window.location.href='auth.html';return;}
+  if(!selectedRating){toast('Select a star rating','error');return;}
+  const txt=document.getElementById('reviewText').value.trim();
+  if(!txt){toast('Write your review','error');return;}
+  try{ await addReview(pid,currentUser.uid,{rating:selectedRating,comment:txt,userName:currentUser.displayName||'Customer'}); toast('Review submitted!','success'); loadReviews(pid); document.getElementById('reviewText').value=''; selectedRating=0; document.querySelectorAll('.ss').forEach(s=>s.classList.remove('on')); }catch(e){toast(e.message,'error');}
+};
+load();
+</script>
+</body>
+</html>

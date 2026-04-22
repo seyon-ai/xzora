@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>XZORA Admin — Commission</title><link rel="stylesheet" href="admin.css"/></head><body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar"><div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Admin Panel</div></div><div class="sb-user"><div class="sb-avatar" id="sbAvatar" style="background:var(--accent)">A</div><div><p class="sb-uname" id="sbName">Admin</p></div></div><nav class="sb-nav"><a href="admin-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a><a href="admin-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>All Orders</a><a href="admin-sellers.html" class="sb-item"><span class="sb-icon">🏪</span>Sellers</a><a href="admin-users.html" class="sb-item"><span class="sb-icon">👥</span>Users</a><a href="admin-products.html" class="sb-item"><span class="sb-icon">📦</span>Products</a><a href="admin-commission.html" class="sb-item on"><span class="sb-icon">💰</span>Commission</a><a href="admin-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Control</a></nav><div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div></aside>
+<div class="main-wrap"><div class="top-bar"><span class="page-title">COMMISSION SETTINGS</span></div>
+<div class="content">
+<div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+  <div class="stat-card"><div class="sc-label">Total Commission Earned</div><div class="sc-value" id="totalComm">₹0</div></div>
+  <div class="stat-card"><div class="sc-label">Current Rate (All Categories)</div><div class="sc-value">5%</div></div>
+  <div class="stat-card"><div class="sc-label">Pending Payouts</div><div class="sc-value">₹0</div></div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">Commission Rates by Category</div>
+    <table>
+      <thead><tr><th>Category</th><th>Rate (%)</th><th>Action</th></tr></thead>
+      <tbody>
+        ${['Electronics','Fashion','Home & Living','Beauty','Sports','Gaming','Books','Grocery','Health','Automotive'].map(cat=>`<tr><td>${cat}</td><td><input type="number" value="5" min="0" max="30" class="form-input" style="width:70px;padding:5px 8px;font-size:12px" id="rate_${cat.replace(/\s/g,'_')}"/></td><td><button class="tb-btn tb-primary" style="padding:4px 10px;font-size:11px" onclick="saveRate('${cat}')">Save</button></td></tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-title">Seller Commission Breakdown</div>
+    <div id="commTbl" style="font-size:13px;color:var(--muted);text-align:center;padding:24px">Loading seller data...</div>
+  </div>
+</div>
+</div></div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireAdmin, logout } from './auth.js';
+import { getAllSellers, getAllOrders } from './admin.js';
+initCursor();
+requireAdmin().then(async user=>{
+  document.getElementById('sbAvatar').textContent=(user.displayName||'A').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Admin';
+  const orders=await getAllOrders(200);
+  const totalRev=orders.reduce((s,o)=>s+(o.total||0),0);
+  const totalComm=totalRev*0.05;
+  document.getElementById('totalComm').textContent='₹'+totalComm.toLocaleString('en-IN');
+  const sellers=await getAllSellers();
+  document.getElementById('commTbl').innerHTML=sellers.length?'<table><thead><tr><th>Seller</th><th>Revenue</th><th>Commission</th><th>Net</th></tr></thead><tbody>'+sellers.map(s=>{const rev=s.revenue||0;const comm=rev*0.05;return`<tr><td>${s.displayName||'Seller'}</td><td>₹${rev.toLocaleString('en-IN')}</td><td>₹${comm.toLocaleString('en-IN')}</td><td>₹${(rev-comm).toLocaleString('en-IN')}</td></tr>`;}).join('')+'</tbody></table>':'<p>No sellers yet</p>';
+});
+document.getElementById('logoutBtn').onclick=()=>logout();
+window.saveRate=function(cat){toast(`Commission rate saved for ${cat}`,'success');};
+</script></body></html>

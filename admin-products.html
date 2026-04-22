@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>XZORA Admin — Products</title><link rel="stylesheet" href="admin.css"/></head><body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<aside class="sidebar"><div class="sb-logo"><a href="index.html">XZ<span>O</span>RA</a><div class="sb-role">Admin Panel</div></div><div class="sb-user"><div class="sb-avatar" id="sbAvatar" style="background:var(--accent)">A</div><div><p class="sb-uname" id="sbName">Admin</p><p class="sb-uemail" id="sbEmail"></p></div></div><nav class="sb-nav"><a href="admin-dashboard.html" class="sb-item"><span class="sb-icon">🏠</span>Dashboard</a><a href="admin-orders.html" class="sb-item"><span class="sb-icon">🛍️</span>All Orders</a><a href="admin-sellers.html" class="sb-item"><span class="sb-icon">🏪</span>Sellers</a><a href="admin-users.html" class="sb-item"><span class="sb-icon">👥</span>Users</a><a href="admin-products.html" class="sb-item on"><span class="sb-icon">📦</span>Products</a><a href="admin-commission.html" class="sb-item"><span class="sb-icon">💰</span>Commission</a><a href="admin-ai.html" class="sb-item"><span class="sb-icon">🤖</span>AI Control</a></nav><div class="sb-bottom"><button class="sb-logout" id="logoutBtn"><span class="sb-icon">🚪</span>Sign Out</button></div></aside>
+<div class="main-wrap"><div class="top-bar"><span class="page-title">ALL PRODUCTS</span><div class="top-actions"><select class="form-select" id="sf" onchange="filterProds()" style="padding:7px 12px;font-size:12px;width:auto"><option value="">All Status</option><option value="pending">Pending</option><option value="active">Active</option><option value="rejected">Rejected</option></select></div></div>
+<div class="content"><div class="card"><table><thead><tr><th>Product</th><th>Seller</th><th>Category</th><th>Price</th><th>Status</th><th>Action</th></tr></thead><tbody id="tbl"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:32px">Loading...</td></tr></tbody></table></div></div></div>
+<script type="module">
+import { initCursor, toast } from './utils.js';
+import { requireAdmin, logout } from './auth.js';
+import { getAllProducts, updateProductStatus } from './admin.js';
+initCursor();
+let allProds=[];
+requireAdmin().then(async user=>{
+  document.getElementById('sbAvatar').textContent=(user.displayName||'A').charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=user.displayName||'Admin';
+  document.getElementById('sbEmail').textContent=user.email||'';
+  try{ allProds=await getAllProducts(200); renderProds(allProds); }
+  catch(e){document.getElementById('tbl').innerHTML=`<tr><td colspan="6" style="color:var(--red);text-align:center">${e.message}</td></tr>`;}
+});
+document.getElementById('logoutBtn').onclick=()=>logout();
+function renderProds(items){document.getElementById('tbl').innerHTML=items.length?items.map(p=>`<tr><td>${p.name}</td><td>${p.sellerName||p.sellerId?.slice(0,8)||'—'}</td><td>${p.category||'—'}</td><td>₹${Number(p.price).toLocaleString('en-IN')}</td><td><span class="status-pill sp-${p.status==='active'?'active':p.status==='pending'?'pending':'inactive'}">${p.status||'pending'}</span></td><td><div style="display:flex;gap:5px"><button class="tb-btn tb-primary" style="padding:4px 8px;font-size:10px" onclick="approveProd('${p.id}')">Approve</button><button class="tb-btn" style="padding:4px 8px;font-size:10px;background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.2)" onclick="rejectProd('${p.id}')">Reject</button></div></td></tr>`).join(''):'<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">No products</td></tr>';}
+window.filterProds=()=>{const f=document.getElementById('sf').value;renderProds(f?allProds.filter(p=>p.status===f):allProds);};
+window.approveProd=async(id)=>{try{await updateProductStatus(id,'active');toast('Approved','success');location.reload();}catch(e){toast(e.message,'error');}};
+window.rejectProd=async(id)=>{try{await updateProductStatus(id,'rejected');toast('Rejected','error');location.reload();}catch(e){toast(e.message,'error');}};
+</script></body></html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XZORA — Track Order</title>
+<link rel="stylesheet" href="main.css"/>
+<style>
+.tr-page{padding:calc(var(--nav-h)+32px) 60px 60px;max-width:900px;margin:0 auto}
+.tr-search{display:flex;gap:10px;margin-bottom:40px}
+.tr-search input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 18px;color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:border-color .2s}
+.tr-search input:focus{border-color:var(--accent)}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px}
+.oc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.oc-id{font-family:var(--font-display);font-size:28px;letter-spacing:2px;color:var(--white)}
+.oc-date{font-size:12px;color:var(--muted);margin-top:3px}
+.oc-total{text-align:right}
+.oc-amount{font-family:var(--font-display);font-size:26px;color:var(--accent);letter-spacing:1px}
+.oc-pay{font-size:11px;color:var(--muted);margin-top:2px}
+.timeline{position:relative;padding-left:32px;margin-bottom:28px}
+.timeline::before{content:'';position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:24px}
+.tl-item:last-child{margin-bottom:0}
+.tl-dot{position:absolute;left:-32px;width:18px;height:18px;border-radius:50%;border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:8px;top:2px;transition:all .3s}
+.tl-item.done .tl-dot{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.tl-item.current .tl-dot{border-color:var(--accent);background:var(--bg);box-shadow:0 0 0 4px rgba(232,213,163,.15)}
+.tl-title{font-size:13px;color:var(--text);font-weight:400;margin-bottom:3px}
+.tl-item.current .tl-title{color:var(--accent)}
+.tl-item:not(.done):not(.current) .tl-title{color:var(--muted2)}
+.tl-time{font-size:11px;color:var(--muted2)}
+.tl-desc{font-size:12px;color:var(--muted);margin-top:3px}
+.order-items{border-top:1px solid var(--border);padding-top:20px}
+.oi-title{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.oi-item{display:flex;gap:12px;margin-bottom:12px;align-items:center}
+.oi-img{width:52px;height:52px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden}
+.oi-img img{width:100%;height:100%;object-fit:cover}
+.oi-name{font-size:13px;color:var(--text);margin-bottom:2px}
+.oi-price{font-size:12px;color:var(--accent)}
+.addr-section{border-top:1px solid var(--border);padding-top:18px;margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.addr-block .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.addr-block p{font-size:13px;color:var(--text);line-height:1.6}
+.status-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;font-size:11px;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.st-confirmed{background:rgba(82,153,224,.12);color:var(--blue);border:1px solid rgba(82,153,224,.25)}
+.st-processing{background:rgba(232,213,163,.1);color:var(--accent);border:1px solid rgba(232,213,163,.2)}
+.st-shipped{background:rgba(201,169,110,.1);color:var(--accent2);border:1px solid rgba(201,169,110,.2)}
+.st-delivered{background:rgba(82,201,122,.12);color:var(--green);border:1px solid rgba(82,201,122,.25)}
+.st-cancelled{background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.2)}
+.all-orders{margin-top:40px}
+.my-order-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:none;transition:border-color .2s}
+.my-order-row:hover{border-color:var(--border2)}
+.mor-id{font-family:var(--font-display);font-size:18px;letter-spacing:1px;color:var(--white)}
+.mor-date{font-size:11px;color:var(--muted);margin-top:2px}
+.mor-amount{font-size:15px;color:var(--accent);font-weight:500}
+@media(max-width:1024px){.tr-page{padding:calc(var(--nav-h)+20px) 20px 40px}.addr-section{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="xz-cursor"></div><div id="xz-ring"></div>
+<nav class="xz-nav">
+  <a href="index.html" class="logo">XZ<span>O</span>RA</a>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge cart-count" style="display:none">0</span></a>
+    <a href="auth.html" class="nav-btn" id="navAuthBtn">Sign In</a>
+  </div>
+</nav>
+<div class="tr-page">
+  <h1 class="section-title" style="margin-bottom:8px">TRACK <span class="accent">ORDER</span></h1>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:24px">Enter your order ID or sign in to see all your orders</p>
+  <div class="tr-search">
+    <input type="text" id="orderIdInput" placeholder="Enter Order ID e.g. XZ1A2B3C4D" value=""/>
+    <button class="btn btn-primary" onclick="trackOrder()">Track</button>
+  </div>
+  <div id="trackResult"></div>
+  <div class="all-orders" id="allOrders" style="display:none">
+    <h3 class="section-title" style="font-size:28px;margin-bottom:16px">MY <span class="accent">ORDERS</span></h3>
+    <div id="ordersList"></div>
+  </div>
+</div>
+<script type="module">
+import { initCursor, toast, updateCartBadge } from './utils.js';
+import { onAuth } from './auth.js';
+import { listenCart } from './cart.js';
+import { db } from './firebase-config.js';
+import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+initCursor();
+let currentUser=null;
+
+onAuth(async u=>{
+  if(u){ currentUser=u; document.getElementById('navAuthBtn').textContent=u.displayName?.split(' ')[0]||'Account'; document.getElementById('navAuthBtn').href='profile.html'; loadMyOrders(u.uid); }
+});
+listenCart(items=>updateCartBadge(items.reduce((s,i)=>s+i.qty,0)));
+
+// Check URL for order ID
+const urlId=new URLSearchParams(location.search).get('id');
+if(urlId){ document.getElementById('orderIdInput').value=urlId; setTimeout(trackOrder,500); }
+
+async function loadMyOrders(uid){
+  try{
+    const q=query(collection(db,'orders'),where('userId','==',uid),orderBy('createdAt','desc'));
+    const snap=await getDocs(q);
+    if(snap.empty)return;
+    document.getElementById('allOrders').style.display='block';
+    document.getElementById('ordersList').innerHTML=snap.docs.map(d=>{
+      const o=d.data();
+      return `<div class="my-order-row" onclick="showOrder(${JSON.stringify(o).replace(/"/g,'&quot;')})">
+        <div><p class="mor-id">${o.orderId}</p><p class="mor-date">${o.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})||'Recent'}</p></div>
+        <div style="display:flex;align-items:center;gap:16px"><span class="mor-amount">₹${o.total?.toLocaleString('en-IN')}</span><span class="status-chip st-${o.status||'confirmed'}">${o.status||'Confirmed'}</span></div>
+      </div>`;
+    }).join('');
+  }catch(e){console.log(e);}
+}
+
+window.trackOrder=async function(){
+  const id=document.getElementById('orderIdInput').value.trim();
+  if(!id){toast('Enter an order ID','error');return;}
+  const el=document.getElementById('trackResult');
+  el.innerHTML=`<div style="text-align:center;padding:40px"><div class="loader-bar" style="width:160px;margin:0 auto"><div class="loader-fill"></div></div></div>`;
+  try{
+    const q=query(collection(db,'orders'),where('orderId','==',id));
+    const snap=await getDocs(q);
+    if(snap.empty){el.innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div><h3 class="empty-title">ORDER NOT FOUND</h3><p class="empty-sub">Check your order ID and try again</p></div>`;return;}
+    showOrder(snap.docs[0].data());
+  }catch(e){el.innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><p class="empty-sub">${e.message}</p></div>`;}
+};
+
+window.showOrder=function(o){
+  const statusMap={confirmed:0,processing:1,shipped:2,delivered:3};
+  const curr=statusMap[o.status]??0;
+  const steps=[
+    {label:'Order Confirmed',icon:'✓',desc:'Your order has been placed and confirmed'},
+    {label:'Processing',icon:'⚙',desc:'Your order is being packed and prepared'},
+    {label:'Shipped',icon:'🚚',desc:'Your order is on its way'},
+    {label:'Delivered',icon:'🎉',desc:'Order delivered successfully'},
+  ];
+  document.getElementById('trackResult').innerHTML=`
+    <div class="order-card">
+      <div class="oc-header">
+        <div><p class="oc-id">${o.orderId}</p><p class="oc-date">Placed on ${o.createdAt?.toDate?.()?.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})||'Recently'}</p></div>
+        <div class="oc-total"><span class="status-chip st-${o.status||'confirmed'}" style="margin-bottom:6px;display:inline-flex">${o.status?.toUpperCase()||'CONFIRMED'}</span><p class="oc-amount">₹${o.total?.toLocaleString('en-IN')}</p><p class="oc-pay">Paid via ${o.payment?.method||'COD'}</p></div>
+      </div>
+      <div class="timeline">
+        ${steps.map((s,i)=>`<div class="tl-item ${i<curr?'done':i===curr?'current':''}">
+          <div class="tl-dot">${i<curr?'✓':s.icon}</div>
+          <p class="tl-title">${s.label}</p>
+          ${i<=curr?`<p class="tl-desc">${s.desc}</p>`:''}
+          <p class="tl-time">${i===0&&o.createdAt?o.createdAt.toDate?.()?.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})||'':''}</p>
+        </div>`).join('')}
+      </div>
+      <div class="order-items">
+        <p class="oi-title">Items Ordered (${o.items?.length||0})</p>
+        ${(o.items||[]).map(i=>`<div class="oi-item"><div class="oi-img">${i.imageUrl?`<img src="${i.imageUrl}" loading="lazy"/>`:(i.emoji||'📦')}</div><div><p class="oi-name">${i.name} ×${i.qty}</p><p class="oi-price">₹${(i.price*i.qty).toLocaleString('en-IN')}</p></div></div>`).join('')}
+      </div>
+      ${o.address?`<div class="addr-section"><div class="addr-block"><p class="label">Delivery Address</p><p>${o.address.name}<br>${o.address.line1}${o.address.line2?', '+o.address.line2:''}<br>${o.address.city}, ${o.address.state} ${o.address.pincode}</p></div><div class="addr-block"><p class="label">Contact</p><p>${o.address.phone}</p></div></div>`:''}
+    </div>`;
+};
+</script>
+</body>
+</html>
